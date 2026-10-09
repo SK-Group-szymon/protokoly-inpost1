@@ -118,7 +118,7 @@
     </div>
   </header>
 
-  <!-- Pasek narzędziowy -->
+  <!-- Pasek narzędziowy z przyciskiem do wgrania czcionki -->
   <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -134,8 +134,12 @@
         <input type="file" id="ocrInput" accept="image/*" class="hidden">
       </label>
       <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-[11px]">
-        Wgraj Szablon PDF
+        Szablon PDF
         <input type="file" id="fileUpload" accept="application/pdf" class="hidden">
+      </label>
+      <label class="cursor-pointer bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/40 px-2.5 py-1 rounded-lg font-bold transition text-[11px]">
+        🔤 Wgraj czcionkę (.ttf)
+        <input type="file" id="fontUpload" accept=".ttf" class="hidden" onchange="wgrajWlasnaCzcionke(this.files[0])">
       </label>
     </div>
   </div>
@@ -182,11 +186,11 @@
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny (z tabliczki)</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny</label>
             <input type="text" id="nr_seryjny" value="25/CQU121000159" class="w-full glass-input rounded-xl px-3 py-2 text-amber-300 font-mono font-extrabold tracking-wider">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny (z tabliczki)</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny</label>
             <input type="text" id="typ_maszyny" value="QR NFM 8.4 A0000 W5VYY" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono">
           </div>
           <div>
