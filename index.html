@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Protokolant Paczkomatów A2 • System Ekspercki</title>
+  <title>Protokolant Paczkomatów A2 • HOVERBUD</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
-  <!-- OCR do tabliczek znamionowych -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,7 +61,6 @@
       color: #0f2b6b;
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-      transition: border-color 0.15s, box-shadow 0.15s;
     }
     .drag-box:active { cursor: grabbing; }
     .drag-box.selected {
@@ -70,13 +68,13 @@
       background: rgba(254, 242, 242, 0.98) !important;
       color: #b91c1c !important;
       z-index: 50;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35), 0 8px 16px rgba(0,0,0,0.3) !important;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35) !important;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-indigo-600 selection:text-white pb-24 sm:pb-8">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased pb-24 sm:pb-8">
 
-  <!-- Pasek górny -->
+  <!-- Header -->
   <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
@@ -87,46 +85,46 @@
           <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • Kalibracja Zapisana</p>
+        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • 100% Autonomiczny</p>
       </div>
     </div>
 
-    <!-- Przełącznik widoków -->
+    <!-- Zakładki -->
     <div class="hidden sm:flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs">
-      <button onclick="switchTab('form')" id="tabBtnForm" class="px-3.5 py-1.5 rounded-xl font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+      <button onclick="switchTab('form')" id="tabBtnForm" class="px-3.5 py-1.5 rounded-xl font-bold bg-indigo-600 text-white shadow">
         📋 Dane & AI
       </button>
-      <button onclick="switchTab('editor')" id="tabBtnEditor" class="px-3.5 py-1.5 rounded-xl font-bold transition-all text-slate-400 hover:text-white">
+      <button onclick="switchTab('editor')" id="tabBtnEditor" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-white">
         🎯 Ruchomy PDF
       </button>
-      <button onclick="otworzHistorie()" class="px-3.5 py-1.5 rounded-xl font-bold transition-all text-slate-400 hover:text-amber-400 flex items-center gap-1">
+      <button onclick="otworzHistorie()" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-amber-400 flex items-center gap-1">
         📚 Historia (<span id="historiaCount">0</span>)
       </button>
     </div>
 
-    <!-- Przyciski akcji -->
+    <!-- Akcje -->
     <div class="flex items-center gap-2">
-      <button onclick="aiUzupelnijWszystko()" class="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-xs font-bold px-3 py-2 rounded-xl shadow-lg shadow-purple-600/20 transition-all">
+      <button onclick="aiUzupelnijWszystko()" class="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition">
         <span>✨</span> AI Dopełnij
       </button>
-      <button onclick="generujWydrukPDF()" id="btnPobierz" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-xs font-bold px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/25 transition-all text-white">
+      <button onclick="generujWydrukPDF()" id="btnPobierz" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-xs font-bold px-4 py-2 rounded-xl shadow-lg transition text-white">
         <span>📄</span> Pobierz PDF
       </button>
     </div>
   </header>
 
-  <!-- Pasek stanu szablonu i szybkich akcji mobilnych -->
+  <!-- Pasek narzędziowy -->
   <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span id="szablonStatusText" class="text-slate-300">Szablon załadowany z bazy ✅</span>
+      <span id="szablonStatusText" class="text-slate-300">Szablon gotowy ✅</span>
     </div>
     
     <div class="flex items-center gap-2">
       <button onclick="toggleGlos()" id="btnGlos" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg font-bold transition">
         <span id="micIcon">🎙️</span> <span id="micText">Dyktuj</span>
       </button>
-      <label class="cursor-pointer flex items-center gap-1 bg-purple-600/30 hover:bg-purple-600/40 active:scale-95 text-purple-200 border border-purple-500/40 px-2.5 py-1 rounded-lg font-bold transition">
+      <label class="cursor-pointer flex items-center gap-1 bg-purple-600/30 hover:bg-purple-600/40 text-purple-200 border border-purple-500/40 px-2.5 py-1 rounded-lg font-bold transition">
         <span>📷</span> Foto tabliczki (OCR)
         <input type="file" id="ocrInput" accept="image/*" class="hidden">
       </label>
@@ -137,29 +135,27 @@
     </div>
   </div>
 
-  <!-- Pływające powiadomienie Toast -->
+  <!-- Toast AI -->
   <div id="aiLiveToast" class="hidden fixed top-16 right-4 z-50 glass-panel border border-indigo-500/50 p-3 rounded-2xl shadow-2xl text-xs max-w-xs transition-all">
     <div class="flex items-center gap-2 text-indigo-400 font-bold mb-1">
-      <span id="toastIcon">✨</span> <span id="toastTitle">Asystent AI</span>
+      <span id="toastIcon">✨</span> <span id="toastTitle">Asystent</span>
     </div>
     <div id="toastMessage" class="text-slate-200 font-mono text-[11px]">...</div>
   </div>
 
   <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5 space-y-4">
-
-    <!-- WIDOK 1: FORMULARZ POMIAROWY -->
+    <!-- WIDOK 1: FORMULARZ -->
     <div id="viewForm" class="space-y-4">
-
       <div class="sm:hidden flex gap-2">
-        <button onclick="aiUzupelnijWszystko()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg">
+        <button onclick="aiUzupelnijWszystko()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow">
           <span>✨</span> AI Dopełnij
         </button>
         <button onclick="otworzHistorie()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-extrabold flex items-center justify-center gap-1.5 text-amber-300">
-          <span>📚</span> Historia maszyn
+          <span>📚</span> Historia
         </button>
       </div>
 
-      <!-- 1. Identyfikacja Paczkomatu -->
+      <!-- 1. Identyfikacja -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -181,11 +177,11 @@
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny (z tabliczki)</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny</label>
             <input type="text" id="nr_seryjny" value="25/CQU121000159" class="w-full glass-input rounded-xl px-3 py-2 text-amber-300 font-mono font-extrabold tracking-wider">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny (z tabliczki)</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny</label>
             <input type="text" id="typ_maszyny" value="QR NFM 8.4 A0000 W5VYY" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono">
           </div>
           <div>
@@ -195,11 +191,11 @@
         </div>
       </div>
 
-      <!-- 1e. Profile Przyrządów Pomiarowych -->
+      <!-- 1e. Profile mierników -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>🛠️</span> 1e. Tabela Przyrządów Pomiarowych
+            <span>🛠️</span> 1e. Przyrządy Pomiarowe
           </h2>
           <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px]">
             <button onclick="ustawProfilMiernika(1)" id="pMiernik1Btn" class="px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white">
@@ -212,7 +208,7 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
           <div>
-            <label class="block text-slate-400 mb-1 text-[10px]">Nazwa przyrządu</label>
+            <label class="block text-slate-400 mb-1 text-[10px]">Nazwa</label>
             <input type="text" id="m_nazwa" value="Sonel" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white">
           </div>
           <div>
@@ -229,12 +225,12 @@
           </div>
         </div>
         <div>
-          <label class="block text-slate-400 mb-1 text-[10px]">Świadectwo wzorcowania (Nr i data ważności)</label>
+          <label class="block text-slate-400 mb-1 text-[10px]">Świadectwo wzorcowania</label>
           <input type="text" id="swiadectwo" value="289834/25 do dnia 29.09.2026" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white font-mono">
         </div>
       </div>
 
-      <!-- 2. Sieć Zasilająca -->
+      <!-- 2. Zasilanie -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -258,10 +254,10 @@
         </div>
       </div>
 
-      <!-- 4. Rezystancja Izolacji -->
+      <!-- 4. Izolacja -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Przewód Zasilający)
+          <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Wymóg ≥ 1 MΩ)
         </h2>
         <div class="space-y-2 text-xs">
           <div class="grid grid-cols-2 gap-3 font-bold text-slate-400 text-[10px] text-center px-1">
@@ -294,7 +290,7 @@
         <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
       </div>
 
-      <!-- 6. Uziemienie 6.1 -->
+      <!-- 6. Uziemienie -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -302,7 +298,6 @@
           </h2>
           <span id="uBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
         </div>
-        
         <div class="grid grid-cols-3 gap-2 text-xs mb-3">
           <div>
             <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 1 [Ω]</label>
@@ -317,7 +312,6 @@
             <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
           </div>
         </div>
-
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
           <div>
             <label class="block text-slate-400 mb-1 text-[10px] text-center">Średnia Rx [Ω]</label>
@@ -338,7 +332,7 @@
         </div>
       </div>
 
-      <!-- 7 & 8. Wyłączniki RCD -->
+      <!-- 7 & 8. RCD -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>⚡</span> 7 i 8. Parametry Wyłączników RCD (30 mA AC)
@@ -379,7 +373,7 @@
         </div>
       </div>
 
-      <!-- 9. Badanie ochrony przeciwporażeniowej -->
+      <!-- 9. Zs -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej
@@ -392,7 +386,6 @@
             <span>Zs zmierzona [Ω]</span>
             <span>Zs dopuszczalna [Ω]</span>
           </div>
-
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Główne zabezpieczenie paczkomatu</span>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -403,7 +396,6 @@
               <input type="text" id="p9_zsd_1" value="4,72" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
             </div>
           </div>
-
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Zabezpieczenie w przyłączu</span>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -417,23 +409,24 @@
         </div>
       </div>
 
-      <!-- 10. Cyfrowy Podpis Odręczny -->
+      <!-- 10. Trwały Podpis Odręczny -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex justify-between items-center mb-3">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>✍️</span> Podpis Odręczny na Stronie 6 (Signature Pad)
+            <span>✍️</span> Twój Trwały Podpis Odręczny (Zapisany na Stałe)
           </h2>
-          <button onclick="wyczyscPodpis()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Wyczyść podpis</button>
+          <button onclick="wyczyscPodpis()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Zmień podpis</button>
         </div>
-        <p class="text-[11px] text-slate-400 mb-2">Złóż parafkę palcem lub rysikiem. Trafi ona na stronę 6 w pole "Szymon Kacprzak":</p>
+        <p class="text-[11px] text-slate-400 mb-2">
+          Podpisz się poniżej tylko <strong>raz</strong>. Przeglądarka zapamięta Twój podpis na stałe i wstawi go do każdego kolejnego protokołu:
+        </p>
         <div class="bg-white rounded-xl overflow-hidden border-2 border-indigo-500/40 shadow-inner">
           <canvas id="sigCanvas" class="w-full h-28 block touch-none cursor-crosshair bg-white"></canvas>
         </div>
       </div>
-
     </div>
 
-    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF -->
+    <!-- WIDOK 2: RUCHOMY PDF -->
     <div id="viewEditor" class="hidden space-y-3">
       <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
         <div class="flex items-center gap-2">
@@ -441,13 +434,12 @@
           <span id="pageNumberDisplay" class="text-xs font-mono font-extrabold text-amber-400 px-2">Strona 1 / 6</span>
           <button onclick="changePage(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">▶</button>
         </div>
-
         <div class="flex items-center gap-2">
           <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek myszką lub dotykiem</span>
           <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
             🔄 Resetuj
           </button>
-          <button onclick="zapiszMatryce()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition">
+          <button onclick="zapiszMatryce()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg transition">
             💾 Zapisz matrycę
           </button>
         </div>
@@ -460,10 +452,9 @@
         </div>
       </div>
     </div>
-
   </main>
 
-  <!-- MODAL: HISTORIA WYKONANYCH PROTOKOŁÓW -->
+  <!-- Modal historii -->
   <div id="modalHistoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
     <div class="glass-panel w-full max-w-2xl rounded-3xl p-5 border border-slate-700 shadow-2xl flex flex-col max-h-[85vh]">
       <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
@@ -474,13 +465,13 @@
       </div>
       <div id="historiaLista" class="flex-1 overflow-auto space-y-2 pr-1"></div>
       <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs">
-        <button onclick="wyczyscCalaHistorie()" class="text-rose-400 hover:text-rose-300">Wyczyść całe archiwum</button>
+        <button onclick="wyczyscCalaHistorie()" class="text-rose-400 hover:text-rose-300">Wyczyść archiwum</button>
         <button onclick="zamknijHistorie()" class="bg-slate-800 text-white font-bold px-4 py-2 rounded-xl">Zamknij</button>
       </div>
     </div>
   </div>
 
-  <!-- Pasek nawigacji dolnej na telefonach -->
+  <!-- Pasek dolny mobile -->
   <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-slate-800/80 px-6 py-2.5 flex justify-around">
     <button onclick="switchTab('form')" id="mTabForm" class="flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]">
       <span class="text-base">📋</span> Dane & AI
@@ -490,8 +481,8 @@
     </button>
   </div>
 
-  <!-- Pływający D-Pad na ekranach dotykowych -->
-  <div id="mobileDpad" class="hidden fixed bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3 animate-slide-up">
+  <!-- Joystick D-Pad -->
+  <div id="mobileDpad" class="hidden fixed bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3">
     <div>
       <div class="text-[10px] text-slate-400 font-mono" id="dpadLabel">Wybrane: brak</div>
       <div class="flex items-center gap-1 mt-1">
@@ -502,880 +493,18 @@
     </div>
     <div class="grid grid-cols-3 gap-1">
       <div></div>
-      <button onclick="nudge(0, -currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow">▲</button>
+      <button onclick="nudge(0, -currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▲</button>
       <div></div>
-      <button onclick="nudge(-currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow">◀</button>
+      <button onclick="nudge(-currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">◀</button>
       <button onclick="deselectActiveBox()" class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-300 font-black flex items-center justify-center text-[10px]">✕</button>
-      <button onclick="nudge(currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow">▶</button>
+      <button onclick="nudge(currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▶</button>
       <div></div>
-      <button onclick="nudge(0, currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow">▼</button>
+      <button onclick="nudge(0, currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▼</button>
       <div></div>
     </div>
   </div>
 
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    const DB_NAME = "ProtokolantDB_A2_v10_dokladna";
-    let db;
-    const initDB = () => new Promise((resolve) => {
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = (e) => e.target.result.createObjectStore("assets");
-      req.onsuccess = (e) => { db = e.target.result; resolve(); };
-    });
-
-    const storePDF = (bytes) => db.transaction("assets", "readwrite").objectStore("assets").put(bytes, "szablon_pdf");
-    const getPDF = () => new Promise((resolve) => {
-      const req = db.transaction("assets").objectStore("assets").get("szablon_pdf");
-      req.onsuccess = (e) => resolve(e.target.result);
-      req.onerror = () => resolve(null);
-    });
-
-    // SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH
-    const bazowaMatryca = {
-      "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
-      "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
-      "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
-      "nr_seryjny":{"page":1,"x":93,"y":127,"fsize":13},
-      "typ_maszyny":{"page":1,"x":286,"y":313,"fsize":11},
-      "adres":{"page":1,"x":303,"y":337,"fsize":10.5},
-      "data_dd":{"page":1,"x":302,"y":359,"fsize":11},
-      "data_mm":{"page":1,"x":348,"y":361,"fsize":11},
-      "data_rr":{"page":1,"x":402,"y":361,"fsize":11},
-      "m_nazwa":{"page":1,"x":101,"y":429,"fsize":11},
-      "m_typ":{"page":1,"x":234,"y":430,"fsize":11},
-      "m_nr":{"page":1,"x":346,"y":427,"fsize":11},
-      "m_zast":{"page":1,"x":455,"y":430,"fsize":11},
-      "swiadectwo":{"page":1,"x":120,"y":504,"fsize":10.5},
-      "in_p":{"page":1,"x":315,"y":610,"fsize":11,"txt":"10"},
-      "typ_in_p":{"page":1,"x":371,"y":607,"fsize":11,"txt":"B"},
-      "din_p":{"page":1,"x":311,"y":638,"fsize":11,"txt":"0,03"},
-      "typ_din_p":{"page":1,"x":372,"y":639,"fsize":11,"txt":"AC"},
-      "in_prz":{"page":1,"x":307,"y":687,"fsize":11,"txt":"16"},
-      "typ_in_prz":{"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
-      "din_prz":{"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
-      "typ_din_prz":{"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
-      
-      "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
-      "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
-      "iz1":{"page":2,"x":222,"y":287,"fsize":11},
-      "iz_req1":{"page":2,"x":333,"y":286,"fsize":11},
-      "iz2":{"page":2,"x":222,"y":304,"fsize":11},
-      "iz_req2":{"page":2,"x":333,"y":302,"fsize":11},
-      "iz3":{"page":2,"x":220,"y":320,"fsize":11},
-      "iz_req3":{"page":2,"x":330,"y":318,"fsize":11},
-      "temp":{"page":2,"x":220,"y":345,"fsize":11},
-      "wilg":{"page":2,"x":211,"y":370,"fsize":11},
-      "prob":{"page":2,"x":209,"y":396,"fsize":11,"txt":"500"},
-      "pe_0":{"page":2,"x":405,"y":505,"fsize":11},
-      "pe_1":{"page":2,"x":406,"y":534,"fsize":11},
-      "pe_2":{"page":2,"x":406,"y":555,"fsize":11},
-      "pe_3":{"page":2,"x":402,"y":572,"fsize":11},
-      "pe_4":{"page":2,"x":402,"y":590,"fsize":11},
-      "pe_5":{"page":2,"x":406,"y":608,"fsize":11},
-      "pe_6":{"page":2,"x":405,"y":625,"fsize":11},
-      "pe_7":{"page":2,"x":404,"y":641,"fsize":11},
-      
-      "u1":{"page":3,"x":111,"y":197,"fsize":11},
-      "u2":{"page":3,"x":112,"y":216,"fsize":11},
-      "u3":{"page":3,"x":114,"y":232,"fsize":11},
-      "u_rx":{"page":3,"x":185,"y":215,"fsize":11},
-      "u_kp":{"page":3,"x":263,"y":214,"fsize":11},
-      "u_r":{"page":3,"x":331,"y":217,"fsize":11},
-      "u_dop":{"page":3,"x":411,"y":217,"fsize":11},
-      "rcd_m_tx5":{"page":3,"x":384,"y":660,"fsize":11},
-      "rcd_m_tx1":{"page":3,"x":385,"y":679,"fsize":11},
-      "rcd_m_i":{"page":3,"x":274,"y":693,"fsize":11},
-      "rcd_m_ub":{"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
-      
-      "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
-      "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
-      "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
-      "rcd_p_ub":{"page":4,"x":266,"y":245,"fsize":11,"txt":"0,3"},
-      "p9_in_1":{"page":4,"x":145,"y":480,"fsize":11},
-      "p9_k_1":{"page":4,"x":195,"y":480,"fsize":11},
-      "p9_ia_1":{"page":4,"x":260,"y":480,"fsize":11},
-      "p9_zsm_1":{"page":4,"x":367,"y":474,"fsize":11},
-      "p9_zsd_1":{"page":4,"x":420,"y":480,"fsize":11},
-      "p9_in_2":{"page":4,"x":145,"y":520,"fsize":11},
-      "p9_k_2":{"page":4,"x":195,"y":520,"fsize":11},
-      "p9_ia_2":{"page":4,"x":260,"y":520,"fsize":11},
-      "p9_zsm_2":{"page":4,"x":365,"y":522,"fsize":11},
-      "p9_zsd_2":{"page":4,"x":420,"y":520,"fsize":11},
-      
-      "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
-      "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
-
-      "podpis":{"page":6,"x":104,"y":435,"fsize":13,"txt":"Szymon Kacprzak"},
-      "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
-      "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"}
-    };
-
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v10_dokladna")) || bazowaMatryca;
-    let loadedPdfBytes = null;
-    let pdfDocPreview = null;
-    let currentPage = 1;
-    let currentScale = 1.0;
-    let activeBoxId = null;
-    let currentNudgeStep = 1;
-
-    // PROFILE MIERNIKÓW
-    const domyslneProfile = {
-      1: { nazwa: "Sonel", typ: "MPI-540", nr: "EK 1709", zast: "Pomiar", swiadectwo: "289834/25 do dnia 29.09.2026" },
-      2: { nazwa: "Sonel", typ: "MPI-530", nr: "SN 29841", zast: "Pomiar", swiadectwo: "142589/25 do dnia 15.05.2026" }
-    };
-    let profileMiernikow = JSON.parse(localStorage.getItem("profile_miernikow")) || domyslneProfile;
-    let aktywnyProfilMiernika = 1;
-
-    function ustawProfilMiernika(id) {
-      aktywnyProfilMiernika = id;
-      const p = profileMiernikow[id];
-      document.getElementById("m_nazwa").value = p.nazwa;
-      document.getElementById("m_typ").value = p.typ;
-      document.getElementById("m_nr").value = p.nr;
-      document.getElementById("m_zast").value = p.zast;
-      document.getElementById("swiadectwo").value = p.swiadectwo;
-
-      document.getElementById("pMiernik1Btn").className = id === 1 ? "px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white" : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white";
-      document.getElementById("pMiernik2Btn").className = id === 2 ? "px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white" : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white";
-      pokazToast("🛠️ Zmiana miernika", `Wybrano profil: ${p.typ} (${p.nr})`);
-    }
-
-    function zapiszProfilMiernika() {
-      profileMiernikow[aktywnyProfilMiernika] = {
-        nazwa: document.getElementById("m_nazwa").value,
-        typ: document.getElementById("m_typ").value,
-        nr: document.getElementById("m_nr").value,
-        zast: document.getElementById("m_zast").value,
-        swiadectwo: document.getElementById("swiadectwo").value
-      };
-      localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
-    }
-
-    // OCR ZE ZDJĘCIA TABLICZKI
-    document.getElementById("ocrInput").addEventListener("change", async (e) => {
-      const f = e.target.files[0];
-      if (f) przetworzZdjecieTabliczki(f);
-    });
-
-    window.addEventListener("paste", (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (const item of items) {
-        if (item.type.indexOf("image") === 0) {
-          const blob = item.getAsFile();
-          przetworzZdjecieTabliczki(blob);
-          break;
-        }
-      }
-    });
-
-    async function przetworzZdjecieTabliczki(file) {
-      pokazToast("⏳ Analiza OCR", "Trwa odczytywanie tabliczki...");
-      try {
-        const worker = await Tesseract.createWorker("pol+eng");
-        const ret = await worker.recognize(file);
-        const text = ret.data.text;
-        await worker.terminate();
-
-        const snMatch = text.match(/([0-9]{2}\/[A-Z0-9]{8,})/i) || text.match(/(?:S\/N|SN)[:\s]*([0-9A-Z\/]+)/i);
-        if (snMatch) {
-          document.getElementById("nr_seryjny").value = snMatch[1].trim();
-        }
-
-        const typeMatch = text.match(/(QR\s*NFM[^\n\r]+)/i) || text.match(/(?:TYPE|TYP)[:\s]*([^\n\r]+)/i);
-        if (typeMatch) {
-          document.getElementById("typ_maszyny").value = typeMatch[1].trim();
-        }
-
-        pokazToast("✅ Sukces OCR", `S/N: ${document.getElementById("nr_seryjny").value}`);
-      } catch (err) {
-        pokazToast("❌ Błąd OCR", err.message);
-      }
-    }
-
-    // ASYSTENT GŁOSOWY
-    let recognition = null;
-    let czyNagrywa = false;
-
-    function initGlos() {
-      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!Speech) return null;
-      const rec = new Speech();
-      rec.lang = "pl-PL";
-      rec.continuous = true;
-      rec.interimResults = false;
-
-      rec.onresult = (event) => {
-        const last = event.results.length - 1;
-        const txt = event.results[last][0].transcript.toLowerCase().trim();
-        parsujGlos(txt);
-      };
-
-      rec.onend = () => {
-        if (czyNagrywa) rec.start();
-      };
-      return rec;
-    }
-
-    function toggleGlos() {
-      if (!recognition) recognition = initGlos();
-      if (!recognition) {
-        alert("Twoja przeglądarka nie obsługuje Web Speech API. Użyj Chrome lub Safari!");
-        return;
-      }
-
-      if (!czyNagrywa) {
-        czyNagrywa = true;
-        recognition.start();
-        document.getElementById("btnGlos").className = "flex items-center gap-1 bg-rose-600 text-white border border-rose-500 px-2.5 py-1 rounded-lg font-bold animate-pulse";
-        document.getElementById("micText").innerText = "Słucham...";
-        pokazToast("🎙️ Mikrofon aktywny", "Mów wartości pomiarowe...");
-      } else {
-        czyNagrywa = false;
-        recognition.stop();
-        document.getElementById("btnGlos").className = "flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg font-bold transition";
-        document.getElementById("micText").innerText = "Dyktuj";
-        pokazToast("🎙️ Zatrzymano", "Rozpoznawanie wyłączone");
-      }
-    }
-
-    function parsujGlos(t) {
-      pokazToast("🗣️ Usłyszano:", t);
-      if (t.includes("napięcie") || t.includes("wolt")) {
-        const num = t.match(/\d+[\.,]?\d*/);
-        if (num) {
-          document.getElementById("napiecie").value = num[0].replace('.', ',');
-          walidujNormy();
-        }
-      } else if (t.includes("uziemienie") || t.includes("uziom")) {
-        const num = t.match(/\d+[\.,]?\d*/);
-        if (num) {
-          const v = num[0].replace('.', ',');
-          document.getElementById("u1").value = v;
-          document.getElementById("u2").value = v;
-          document.getElementById("u3").value = v;
-          obliczUziemienie();
-        }
-      } else if (t.includes("pętla") || t.includes("zwarcie")) {
-        const num = t.match(/\d+[\.,]?\d*/);
-        if (num) {
-          const v = num[0].replace('.', ',');
-          document.getElementById("p9_zsm_1").value = v;
-          document.getElementById("p9_zsm_2").value = v;
-        }
-      } else if (t.includes("temperatura")) {
-        const num = t.match(/\d+[\.,]?\d*/);
-        if (num) document.getElementById("temp").value = num[0].replace('.', ',');
-      } else if (t.includes("wilgotność")) {
-        const num = t.match(/\d+[\.,]?\d*/);
-        if (num) document.getElementById("wilg").value = num[0].replace('.', ',');
-      }
-    }
-
-    function pokazToast(tytul, tresc) {
-      const toast = document.getElementById("aiLiveToast");
-      document.getElementById("toastTitle").innerText = tytul;
-      document.getElementById("toastMessage").innerText = tresc;
-      toast.classList.remove("hidden");
-      setTimeout(() => toast.classList.add("hidden"), 3500);
-    }
-
-    // SIGNATURE PAD
-    const sigCanvas = document.getElementById("sigCanvas");
-    const sigCtx = sigCanvas.getContext("2d");
-    let rysuje = false;
-    let maPodpis = false;
-
-    function resizeSigCanvas() {
-      const rect = sigCanvas.getBoundingClientRect();
-      sigCanvas.width = rect.width * 2;
-      sigCanvas.height = rect.height * 2;
-      sigCtx.scale(2, 2);
-      sigCtx.lineWidth = 2.4;
-      sigCtx.lineCap = "round";
-      sigCtx.strokeStyle = "#0f2b6b";
-    }
-
-    function getSigPos(e) {
-      const rect = sigCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    sigCanvas.addEventListener("pointerdown", (e) => {
-      rysuje = true;
-      maPodpis = true;
-      const pos = getSigPos(e);
-      sigCtx.beginPath();
-      sigCtx.moveTo(pos.x, pos.y);
-    });
-
-    sigCanvas.addEventListener("pointermove", (e) => {
-      if (!rysuje) return;
-      const pos = getSigPos(e);
-      sigCtx.lineTo(pos.x, pos.y);
-      sigCtx.stroke();
-    });
-
-    window.addEventListener("pointerup", () => { rysuje = false; });
-
-    function wyczyscPodpis() {
-      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-      maPodpis = false;
-    }
-
-    // AUTO-KADROWANIE PODPISU (ZACHOWUJE NATURALNE PROPORCJE)
-    function pobierzSkadrowanyPodpis() {
-      if (!maPodpis) return null;
-      const w = sigCanvas.width;
-      const h = sigCanvas.height;
-      const imgData = sigCtx.getImageData(0, 0, w, h);
-      const d = imgData.data;
-
-      let minX = w, minY = h, maxX = 0, maxY = 0;
-      let wykrytoTusz = false;
-
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const alpha = d[(y * w + x) * 4 + 3];
-          if (alpha > 20) {
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-            wykrytoTusz = true;
-          }
-        }
-      }
-
-      if (!wykrytoTusz) return null;
-
-      const pad = 6;
-      minX = Math.max(0, minX - pad);
-      minY = Math.max(0, minY - pad);
-      maxX = Math.min(w, maxX + pad);
-      maxY = Math.min(h, maxY + pad);
-
-      const cropW = maxX - minX;
-      const cropH = maxY - minY;
-
-      const cCanvas = document.createElement("canvas");
-      cCanvas.width = cropW;
-      cCanvas.height = cropH;
-      const cCtx = cCanvas.getContext("2d");
-      cCtx.drawImage(sigCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-
-      return {
-        dataUrl: cCanvas.toDataURL("image/png"),
-        aspect: cropW / cropH
-      };
-    }
-
-    // HISTORIA I ARCHIWIZACJA
-    function pobierzHistorie() {
-      return JSON.parse(localStorage.getItem("archiwum_protokolow")) || [];
-    }
-
-    function zapiszDoHistorii() {
-      const archiwum = pobierzHistorie();
-      const snapshot = {
-        id: Date.now(),
-        data: `${document.getElementById("data_dd").value}/${document.getElementById("data_mm").value}/${document.getElementById("data_rr").value}`,
-        nr_protokolu: document.getElementById("nr_protokolu").value,
-        nr_seryjny: document.getElementById("nr_seryjny").value,
-        adres: document.getElementById("adres").value,
-        typ_maszyny: document.getElementById("typ_maszyny").value,
-        napiecie: document.getElementById("napiecie").value,
-        r: document.getElementById("u_r").value,
-        zs: document.getElementById("p9_zsm_1").value
-      };
-      archiwum.unshift(snapshot);
-      if (archiwum.length > 20) archiwum.pop();
-      localStorage.setItem("archiwum_protokolow", JSON.stringify(archiwum));
-      odswiezLicznikHistorii();
-    }
-
-    function odswiezLicznikHistorii() {
-      document.getElementById("historiaCount").innerText = pobierzHistorie().length;
-    }
-
-    function otworzHistorie() {
-      const lista = document.getElementById("historiaLista");
-      const arch = pobierzHistorie();
-      lista.innerHTML = "";
-
-      if (arch.length === 0) {
-        lista.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">Brak zapisanych protokołów w pamięci.</div>`;
-      } else {
-        arch.forEach(item => {
-          lista.innerHTML += `
-            <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex justify-between items-center text-xs">
-              <div>
-                <span class="font-extrabold text-amber-300 font-mono block text-sm">${item.nr_seryjny}</span>
-                <span class="text-slate-400 block text-[11px]">${item.nr_protokolu} • ${item.data}</span>
-                <span class="text-slate-500 block text-[10px] truncate max-w-[240px]">${item.adres}</span>
-              </div>
-              <div class="flex gap-2">
-                <button onclick="wczytajZHistorii(${item.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-xl">Wczytaj</button>
-                <button onclick="usunZHistorii(${item.id})" class="text-rose-400 hover:text-rose-300 p-1">✕</button>
-              </div>
-            </div>
-          `;
-        });
-      }
-      document.getElementById("modalHistoria").classList.remove("hidden");
-    }
-
-    function zamknijHistorie() {
-      document.getElementById("modalHistoria").classList.add("hidden");
-    }
-
-    function wczytajZHistorii(id) {
-      const item = pobierzHistorie().find(x => x.id === id);
-      if (item) {
-        document.getElementById("nr_seryjny").value = item.nr_seryjny;
-        document.getElementById("nr_protokolu").value = item.nr_protokolu;
-        document.getElementById("adres").value = item.adres;
-        document.getElementById("typ_maszyny").value = item.typ_maszyny;
-        document.getElementById("napiecie").value = item.napiecie;
-        zamknijHistorie();
-        pokazToast("📋 Wczytano dane", `Przywrócono: ${item.nr_seryjny}`);
-      }
-    }
-
-    function usunZHistorii(id) {
-      let arch = pobierzHistorie().filter(x => x.id !== id);
-      localStorage.setItem("archiwum_protokolow", JSON.stringify(arch));
-      otworzHistorie();
-      odswiezLicznikHistorii();
-    }
-
-    function wyczyscCalaHistorie() {
-      if (confirm("Czy na pewno usunąć całą historię protokołów?")) {
-        localStorage.removeItem("archiwum_protokolow");
-        otworzHistorie();
-        odswiezLicznikHistorii();
-      }
-    }
-
-    // KALKULACJE I WALIDACJA
-    const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
-    const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
-
-    function usunPolskieZnaki(tekst) {
-      const mapa = { 'ą':'a', 'ć':'c', 'ę':'e', 'ł':'l', 'ń':'n', 'ó':'o', 'ś':'s', 'ź':'z', 'ż':'z',
-                     'Ą':'A', 'Ć':'C', 'Ę':'E', 'Ł':'L', 'Ń':'N', 'Ó':'O', 'Ś':'S', 'Ź':'Z', 'Ż':'Z' };
-      return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
-    }
-
-    const peBox = document.getElementById("peContainer");
-    const domyslnePE = ["0,18", "0,24", "0,14", "0,07", "0,08", "0,06", "0,09", "0,05"];
-    for(let i=0; i<8; i++) {
-      peBox.innerHTML += `
-        <div>
-          <span class="text-[9px] text-slate-500 block text-center font-bold mb-1">Pkt ${i+1}</span>
-          <input type="text" inputmode="decimal" id="pe_${i}" value="${domyslnePE[i]}" oninput="walidujNormy()" class="w-full glass-input rounded-xl p-2 text-center font-mono font-bold text-xs">
-        </div>
-      `;
-    }
-
-    function walidujNormy() {
-      const v = toN(document.getElementById("napiecie").value);
-      const vBadge = document.getElementById("vBadge");
-      if (v < 207 || v > 253) {
-        vBadge.innerText = "Błąd normy!";
-        vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-      } else {
-        vBadge.innerText = "Norma OK";
-        vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-      }
-    }
-
-    function obliczUziemienie() {
-      const u1 = toN(document.getElementById("u1").value);
-      const u2 = toN(document.getElementById("u2").value);
-      const u3 = toN(document.getElementById("u3").value);
-      const kp = toN(document.getElementById("u_kp").value) || 1.2;
-      
-      const rx = (u1 + u2 + u3) / 3;
-      const r = rx * kp;
-
-      document.getElementById("u_rx").value = toS(rx);
-      document.getElementById("u_r").value = toS(r);
-
-      const uBadge = document.getElementById("uBadge");
-      if (r > 10.0) {
-        uBadge.innerText = "R > 10 Ω (Zagrożenie!)";
-        uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-      } else {
-        uBadge.innerText = "Norma OK";
-        uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-      }
-    }
-
-    function aiUzupelnijWszystko() {
-      document.getElementById("napiecie").value = toS(229.2 + (Math.random() * 3.5), 1);
-      aiGenerujPE();
-      document.getElementById("rcd_m_i").value = toS(16.9 + (Math.random() * 2.1), 1);
-      document.getElementById("rcd_p_i").value = toS(20.4 + (Math.random() * 1.9), 1);
-      obliczUziemienie();
-      walidujNormy();
-      pokazToast("✨ AI Dopełnienie", "Wprowadzono spójne wartości pomiarowe.");
-    }
-
-    function aiGenerujPE() {
-      const wzorce = [0.17, 0.22, 0.14, 0.07, 0.08, 0.06, 0.09, 0.05];
-      for(let i=0; i<8; i++) {
-        const rand = (Math.random() * 0.03 - 0.015);
-        document.getElementById(`pe_${i}`).value = toS(Math.max(0.04, wzorce[i] + rand), 2);
-      }
-    }
-
-    // PODGLĄD PDF & DRAG & DROP
-    async function loadTemplate() {
-      await initDB();
-      loadedPdfBytes = await getPDF();
-
-      if (!loadedPdfBytes) {
-        try {
-          const res = await fetch("szablon.pdf");
-          if (res.ok) {
-            loadedPdfBytes = await res.arrayBuffer();
-            await storePDF(loadedPdfBytes);
-          }
-        } catch (_) {}
-      }
-
-      if (loadedPdfBytes) {
-        document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
-        initPdfPreview();
-      } else {
-        document.getElementById("szablonStatusText").innerHTML = "Wskaż plik <strong>szablon.pdf</strong>:";
-      }
-      odswiezLicznikHistorii();
-      resizeSigCanvas();
-    }
-
-    document.getElementById("fileUpload").addEventListener("change", async (e) => {
-      const f = e.target.files[0];
-      if (f) {
-        loadedPdfBytes = await f.arrayBuffer();
-        await storePDF(loadedPdfBytes);
-        document.getElementById("szablonStatusText").innerHTML = "Szablon zapisany w bazie ✅";
-        initPdfPreview();
-      }
-    });
-
-    async function initPdfPreview() {
-      if (!loadedPdfBytes) return;
-      pdfDocPreview = await pdfjsLib.getDocument({ data: loadedPdfBytes.slice(0) }).promise;
-      renderPage(currentPage);
-    }
-
-    async function renderPage(num) {
-      if (!pdfDocPreview) return;
-      document.getElementById("pageNumberDisplay").innerText = `Strona ${num} / ${pdfDocPreview.numPages}`;
-      const page = await pdfDocPreview.getPage(num);
-      
-      const unscaled = page.getViewport({ scale: 1.0 });
-      const containerWidth = Math.min(window.innerWidth - 32, 850);
-      currentScale = containerWidth / unscaled.width;
-      const viewport = page.getViewport({ scale: currentScale });
-
-      const canvas = document.getElementById("pdfCanvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-
-      const wrapper = document.getElementById("canvasWrapper");
-      wrapper.style.width = `${viewport.width}px`;
-      wrapper.style.height = `${viewport.height}px`;
-
-      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-      renderDraggableTags(num);
-    }
-
-    function renderDraggableTags(num) {
-      const layer = document.getElementById("dragLayer");
-      layer.innerHTML = "";
-
-      for(const [id, item] of Object.entries(matryca)) {
-        if (item.page !== num) continue;
-
-        let displayVal = item.txt;
-        if (!displayVal) {
-          const el = document.getElementById(id);
-          displayVal = el ? el.value : "—";
-        }
-
-        const tag = document.createElement("div");
-        tag.id = `tag_${id}`;
-        tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
-        tag.innerText = displayVal;
-        tag.style.fontSize = `${item.fsize * currentScale}px`;
-        tag.style.left = `${item.x * currentScale}px`;
-        tag.style.top = `${item.y * currentScale}px`;
-
-        tag.addEventListener("pointerdown", (e) => startDrag(e, id));
-        layer.appendChild(tag);
-      }
-    }
-
-    function startDrag(e, id) {
-      e.preventDefault();
-      e.stopPropagation();
-      activeBoxId = id;
-
-      document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
-      const targetEl = e.currentTarget;
-      targetEl.classList.add('selected');
-      updateDpadStatus();
-
-      const startX = e.clientX;
-      const startY = e.clientY;
-      const initX = matryca[id].x;
-      const initY = matryca[id].y;
-
-      function onPointerMove(ev) {
-        ev.preventDefault();
-        const dx = (ev.clientX - startX) / currentScale;
-        const dy = (ev.clientY - startY) / currentScale;
-        matryca[id].x = Math.round(initX + dx);
-        matryca[id].y = Math.round(initY + dy);
-        targetEl.style.left = `${matryca[id].x * currentScale}px`;
-        targetEl.style.top = `${matryca[id].y * currentScale}px`;
-        updateDpadStatus();
-      }
-
-      function onPointerUp(ev) {
-        window.removeEventListener("pointermove", onPointerMove);
-        window.removeEventListener("pointerup", onPointerUp);
-        window.removeEventListener("pointercancel", onPointerUp);
-      }
-
-      window.addEventListener("pointermove", onPointerMove, { passive: false });
-      window.addEventListener("pointerup", onPointerUp);
-      window.addEventListener("pointercancel", onPointerUp);
-    }
-
-    function nudge(dx, dy) {
-      if (!activeBoxId || !matryca[activeBoxId]) return;
-      matryca[activeBoxId].x += dx;
-      matryca[activeBoxId].y += dy;
-      
-      const tag = document.getElementById(`tag_${activeBoxId}`);
-      if (tag) {
-        tag.style.left = `${matryca[activeBoxId].x * currentScale}px`;
-        tag.style.top = `${matryca[activeBoxId].y * currentScale}px`;
-      }
-      updateDpadStatus();
-    }
-
-    function setNudgeStep(s) {
-      currentNudgeStep = s;
-      [1, 5, 10].forEach(n => {
-        const btn = document.getElementById(`step${n}Btn`);
-        btn.className = n === s ? "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white" : "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400";
-      });
-    }
-
-    function deselectActiveBox() {
-      activeBoxId = null;
-      document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
-      document.getElementById("mobileDpad").classList.add("hidden");
-      document.getElementById("desktopActiveField").innerText = "Chwyć kafelek myszką lub dotykiem";
-    }
-
-    function updateDpadStatus() {
-      if (!activeBoxId) return;
-      const dpad = document.getElementById("mobileDpad");
-      dpad.classList.remove("hidden");
-      const infoText = `${activeBoxId} (${matryca[activeBoxId].x}, ${matryca[activeBoxId].y})`;
-      document.getElementById("dpadLabel").innerText = infoText;
-      document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
-    }
-
-    window.addEventListener('keydown', (e) => {
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-      if (!activeBoxId || !matryca[activeBoxId]) return;
-
-      const krok = e.shiftKey ? 5 : 1;
-      if (e.key === 'ArrowLeft') { e.preventDefault(); nudge(-krok, 0); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); nudge(krok, 0); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); nudge(0, -krok); }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0, krok); }
-      else if (e.key === 'Escape') { deselectActiveBox(); }
-    });
-
-    function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v10_dokladna", JSON.stringify(matryca));
-      alert("✅ Matryca współrzędnych została trwale zapisana!");
-    }
-
-    function przywrocWspolrzedne() {
-      if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
-        matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-        localStorage.removeItem("matryca_paczkomat_v10_dokladna");
-        renderPage(currentPage);
-      }
-    }
-
-    function changePage(delta) {
-      if (!pdfDocPreview) return;
-      const n = currentPage + delta;
-      if (n >= 1 && n <= pdfDocPreview.numPages) {
-        currentPage = n;
-        deselectActiveBox();
-        renderPage(currentPage);
-      }
-    }
-
-    function switchTab(tab) {
-      const vForm = document.getElementById("viewForm");
-      const vEditor = document.getElementById("viewEditor");
-      const tBtnForm = document.getElementById("tabBtnForm");
-      const tBtnEditor = document.getElementById("tabBtnEditor");
-      const mTabF = document.getElementById("mTabForm");
-      const mTabE = document.getElementById("mTabEditor");
-
-      if (tab === 'form') {
-        vForm.classList.remove("hidden");
-        vEditor.classList.add("hidden");
-        tBtnForm.className = "px-3.5 py-1.5 rounded-xl font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/30";
-        tBtnEditor.className = "px-3.5 py-1.5 rounded-xl font-bold transition-all text-slate-400 hover:text-white";
-        mTabF.className = "flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]";
-        mTabE.className = "flex flex-col items-center gap-1 text-slate-400 font-bold text-[11px]";
-        deselectActiveBox();
-      } else {
-        vForm.classList.add("hidden");
-        vEditor.classList.remove("hidden");
-        tBtnEditor.className = "px-3.5 py-1.5 rounded-xl font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/30";
-        tBtnForm.className = "px-3.5 py-1.5 rounded-xl font-bold transition-all text-slate-400 hover:text-white";
-        mTabE.className = "flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]";
-        mTabF.className = "flex flex-col items-center gap-1 text-slate-400 font-bold text-[11px]";
-        if (pdfDocPreview) renderPage(currentPage);
-      }
-    }
-
-    // GENEROWANIE WYDRUKU PDF ZE STATYCZNĄ CZCIONKĄ ORAZ AUTO-KADROWANIEM PODPISU
-    async function generujWydrukPDF() {
-      const btn = document.getElementById("btnPobierz");
-      btn.innerText = "⏳ Generuję...";
-      btn.disabled = true;
-
-      try {
-        if (!loadedPdfBytes) {
-          alert("Wgraj najpierw plik szablon.pdf!");
-          btn.innerText = "📄 Pobierz PDF";
-          btn.disabled = false;
-          return;
-        }
-
-        const pdfDoc = await PDFLib.PDFDocument.load(loadedPdfBytes.slice(0));
-        pdfDoc.registerFontkit(fontkit);
-
-        let customFont = null;
-        let uzytoHelvetiki = false;
-
-        // Statyczna czcionka Caveat-Bold – eliminuje błąd rozjeżdżających się liter
-        const staticFontUrls = [
-          "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf",
-          "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf"
-        ];
-
-        for (const url of staticFontUrls) {
-          try {
-            const fRes = await fetch(url);
-            if (fRes.ok) {
-              const fontBuffer = await fRes.arrayBuffer();
-              customFont = await pdfDoc.embedFont(fontBuffer);
-              break;
-            }
-          } catch (_) {}
-        }
-
-        if (!customFont) {
-          customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-          uzytoHelvetiki = true;
-        }
-
-        const pages = pdfDoc.getPages();
-        const ink = PDFLib.rgb(0.08, 0.18, 0.45);
-
-        const draw = (pNum, txt, x, y, size=11) => {
-          const p = pages[pNum - 1];
-          const safeTxt = uzytoHelvetiki ? usunPolskieZnaki(txt) : String(txt);
-          p.drawText(safeTxt, {
-            x: x,
-            y: p.getSize().height - y - (size * 0.25),
-            size: size,
-            font: customFont,
-            color: ink
-          });
-        };
-
-        // Nanoszenie wartości (strony 1-6)
-        for (const [id, item] of Object.entries(matryca)) {
-          let val = item.txt;
-          if (!val) {
-            const el = document.getElementById(id);
-            if (el) val = el.value;
-          }
-          
-          if (id === "podpis" && maPodpis) continue;
-
-          if (val) {
-            draw(item.page, val, item.x, item.y, item.fsize);
-          }
-        }
-
-        // Naniesienie odręcznego podpisu z zachowaniem proporcji i kadrowaniem
-        if (maPodpis) {
-          const skadrowany = pobierzSkadrowanyPodpis();
-          if (skadrowany) {
-            const sigImage = await pdfDoc.embedPng(skadrowany.dataUrl);
-            const p6 = pages[5];
-            const h6 = p6.getSize().height;
-            const podCoords = matryca["podpis"] || { x: 104, y: 435 };
-
-            const maxW = 90;
-            const maxH = 26;
-            let w = maxW;
-            let h = w / skadrowany.aspect;
-            if (h > maxH) {
-              h = maxH;
-              w = h * skadrowany.aspect;
-            }
-
-            p6.drawImage(sigImage, {
-              x: podCoords.x - 12,
-              y: h6 - podCoords.y - (h / 2),
-              width: w,
-              height: h
-            });
-          }
-        }
-
-        const pdfBytes = await pdfDoc.save();
-        const blob = new Blob([pdfBytes], { type: "application/pdf" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        const sn = document.getElementById("nr_seryjny").value.replace(/[\/\\]/g, '_');
-        link.download = `Protokol_${sn}.pdf`;
-        link.click();
-
-        zapiszDoHistorii();
-
-      } catch (err) {
-        alert("Błąd: " + err.message);
-      } finally {
-        btn.innerText = "📄 Pobierz PDF";
-        btn.disabled = false;
-      }
-    }
-
-    window.onload = loadTemplate;
-  </script>
+  <!-- Połączenie z plikiem app.js -->
+  <script src="app.js"></script>
 </body>
 </html>
