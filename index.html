@@ -122,7 +122,6 @@
       <span id="szablonStatusText" class="text-slate-300">Szablon załadowany z bazy ✅</span>
     </div>
     
-    <!-- Pasek szybkiego zasilania danymi: Głos + Aparat/Foto Tabliczki -->
     <div class="flex items-center gap-2">
       <button onclick="toggleGlos()" id="btnGlos" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg font-bold transition">
         <span id="micIcon">🎙️</span> <span id="micText">Dyktuj</span>
@@ -148,12 +147,9 @@
 
   <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5 space-y-4">
 
-    <!-- ============================================== -->
-    <!-- WIDOK 1: INTELIGENTNY FORMULARZ POMIAROWY      -->
-    <!-- ============================================== -->
+    <!-- WIDOK 1: FORMULARZ POMIAROWY -->
     <div id="viewForm" class="space-y-4">
 
-      <!-- Pasek mobilny -->
       <div class="sm:hidden flex gap-2">
         <button onclick="aiUzupelnijWszystko()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg">
           <span>✨</span> AI Dopełnij
@@ -348,7 +344,6 @@
           <span>⚡</span> 7 i 8. Parametry Wyłączników RCD (30 mA AC)
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-          <!-- RCD w maszynie -->
           <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie</span>
             <div class="grid grid-cols-2 gap-2">
@@ -365,7 +360,6 @@
               </div>
             </div>
           </div>
-          <!-- RCD w przyłączu -->
           <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu</span>
             <div class="grid grid-cols-2 gap-2">
@@ -399,7 +393,6 @@
             <span>Zs dopuszczalna [Ω]</span>
           </div>
 
-          <!-- Wiersz 1: Paczkomat -->
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Główne zabezpieczenie paczkomatu</span>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -411,7 +404,6 @@
             </div>
           </div>
 
-          <!-- Wiersz 2: Przyłącze -->
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Zabezpieczenie w przyłączu</span>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -441,9 +433,7 @@
 
     </div>
 
-    <!-- ============================================== -->
-    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF (WYSIWYG)      -->
-    <!-- ============================================== -->
+    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF -->
     <div id="viewEditor" class="hidden space-y-3">
       <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
         <div class="flex items-center gap-2">
@@ -526,7 +516,7 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const DB_NAME = "ProtokolantDB_A2_v9_dokladna";
+    const DB_NAME = "ProtokolantDB_A2_v10_dokladna";
     let db;
     const initDB = () => new Promise((resolve) => {
       const req = indexedDB.open(DB_NAME, 1);
@@ -541,7 +531,7 @@
       req.onerror = () => resolve(null);
     });
 
-    // TWOJA DOKŁADNA SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH
+    // SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH
     const bazowaMatryca = {
       "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
       "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
@@ -616,13 +606,12 @@
       "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
       "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-      // Strona 6: Dokładne pozycje zgodne ze zdjęciem
       "podpis":{"page":6,"x":104,"y":435,"fsize":13,"txt":"Szymon Kacprzak"},
       "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
       "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"}
     };
 
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v9_dokladna")) || bazowaMatryca;
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v10_dokladna")) || bazowaMatryca;
     let loadedPdfBytes = null;
     let pdfDocPreview = null;
     let currentPage = 1;
@@ -834,6 +823,53 @@
     function wyczyscPodpis() {
       sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
       maPodpis = false;
+    }
+
+    // AUTO-KADROWANIE PODPISU (ZACHOWUJE NATURALNE PROPORCJE)
+    function pobierzSkadrowanyPodpis() {
+      if (!maPodpis) return null;
+      const w = sigCanvas.width;
+      const h = sigCanvas.height;
+      const imgData = sigCtx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      let minX = w, minY = h, maxX = 0, maxY = 0;
+      let wykrytoTusz = false;
+
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const alpha = d[(y * w + x) * 4 + 3];
+          if (alpha > 20) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+            wykrytoTusz = true;
+          }
+        }
+      }
+
+      if (!wykrytoTusz) return null;
+
+      const pad = 6;
+      minX = Math.max(0, minX - pad);
+      minY = Math.max(0, minY - pad);
+      maxX = Math.min(w, maxX + pad);
+      maxY = Math.min(h, maxY + pad);
+
+      const cropW = maxX - minX;
+      const cropH = maxY - minY;
+
+      const cCanvas = document.createElement("canvas");
+      cCanvas.width = cropW;
+      cCanvas.height = cropH;
+      const cCtx = cCanvas.getContext("2d");
+      cCtx.drawImage(sigCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+      return {
+        dataUrl: cCanvas.toDataURL("image/png"),
+        aspect: cropW / cropH
+      };
     }
 
     // HISTORIA I ARCHIWIZACJA
@@ -1173,14 +1209,14 @@
     });
 
     function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v9_dokladna", JSON.stringify(matryca));
+      localStorage.setItem("matryca_paczkomat_v10_dokladna", JSON.stringify(matryca));
       alert("✅ Matryca współrzędnych została trwale zapisana!");
     }
 
     function przywrocWspolrzedne() {
-if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
+      if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
         matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-        localStorage.removeItem("matryca_paczkomat_v9_dokladna");
+        localStorage.removeItem("matryca_paczkomat_v10_dokladna");
         renderPage(currentPage);
       }
     }
@@ -1222,7 +1258,7 @@ if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")
       }
     }
 
-    // GENEROWANIE WYDRUKU PDF Z PODPISEM NA STRONIE 6
+    // GENEROWANIE WYDRUKU PDF ZE STATYCZNĄ CZCIONKĄ ORAZ AUTO-KADROWANIEM PODPISU
     async function generujWydrukPDF() {
       const btn = document.getElementById("btnPobierz");
       btn.innerText = "⏳ Generuję...";
@@ -1242,13 +1278,22 @@ if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")
         let customFont = null;
         let uzytoHelvetiki = false;
 
-        try {
-          const fRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/Caveat%5Bwght%5D.ttf");
-          if (fRes.ok) {
-            const fontBuffer = await fRes.arrayBuffer();
-            customFont = await pdfDoc.embedFont(fontBuffer);
-          }
-        } catch (_) {}
+        // Statyczna czcionka Caveat-Bold – eliminuje błąd rozjeżdżających się liter
+        const staticFontUrls = [
+          "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf",
+          "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf"
+        ];
+
+        for (const url of staticFontUrls) {
+          try {
+            const fRes = await fetch(url);
+            if (fRes.ok) {
+              const fontBuffer = await fRes.arrayBuffer();
+              customFont = await pdfDoc.embedFont(fontBuffer);
+              break;
+            }
+          } catch (_) {}
+        }
 
         if (!customFont) {
           customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
@@ -1278,7 +1323,6 @@ if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")
             if (el) val = el.value;
           }
           
-          // Jeśli złożono podpis na Signature Pad, pomijamy zwykły tekst w polu "podpis"
           if (id === "podpis" && maPodpis) continue;
 
           if (val) {
@@ -1286,20 +1330,31 @@ if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")
           }
         }
 
-        // Naniesienie podpisu odręcznego DOKŁADNIE w miejscu "Szymon Kacprzak"
+        // Naniesienie odręcznego podpisu z zachowaniem proporcji i kadrowaniem
         if (maPodpis) {
-          const sigData = sigCanvas.toDataURL("image/png");
-          const sigImage = await pdfDoc.embedPng(sigData);
-          const p6 = pages[5];
-          const h6 = p6.getSize().height;
-          
-          const podCoords = matryca["podpis"] || { x: 104, y: 435 };
-          p6.drawImage(sigImage, {
-            x: podCoords.x - 15,
-            y: h6 - podCoords.y - 25,
-            width: 110,
-            height: 36
-          });
+          const skadrowany = pobierzSkadrowanyPodpis();
+          if (skadrowany) {
+            const sigImage = await pdfDoc.embedPng(skadrowany.dataUrl);
+            const p6 = pages[5];
+            const h6 = p6.getSize().height;
+            const podCoords = matryca["podpis"] || { x: 104, y: 435 };
+
+            const maxW = 90;
+            const maxH = 26;
+            let w = maxW;
+            let h = w / skadrowany.aspect;
+            if (h > maxH) {
+              h = maxH;
+              w = h * skadrowany.aspect;
+            }
+
+            p6.drawImage(sigImage, {
+              x: podCoords.x - 12,
+              y: h6 - podCoords.y - (h / 2),
+              width: w,
+              height: h
+            });
+          }
         }
 
         const pdfBytes = await pdfDoc.save();
