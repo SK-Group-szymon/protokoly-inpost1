@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
-  <!-- Biblioteka OCR do analizy zdjęć tabliczek -->
+  <!-- OCR do tabliczek znamionowych -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,7 @@
           <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • System Terenowy</p>
+        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • Kalibracja Zapisana</p>
       </div>
     </div>
 
@@ -138,7 +138,7 @@
     </div>
   </div>
 
-  <!-- Pływające powiadomienie o rozpoznanej mowie lub OCR -->
+  <!-- Pływające powiadomienie Toast -->
   <div id="aiLiveToast" class="hidden fixed top-16 right-4 z-50 glass-panel border border-indigo-500/50 p-3 rounded-2xl shadow-2xl text-xs max-w-xs transition-all">
     <div class="flex items-center gap-2 text-indigo-400 font-bold mb-1">
       <span id="toastIcon">✨</span> <span id="toastTitle">Asystent AI</span>
@@ -153,7 +153,7 @@
     <!-- ============================================== -->
     <div id="viewForm" class="space-y-4">
 
-      <!-- Pasek szybkiej akcji mobilnej -->
+      <!-- Pasek mobilny -->
       <div class="sm:hidden flex gap-2">
         <button onclick="aiUzupelnijWszystko()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg">
           <span>✨</span> AI Dopełnij
@@ -199,13 +199,12 @@
         </div>
       </div>
 
-      <!-- 1e. Profile Przyrządów Pomiarowych (Przełącznik 1-klik) -->
+      <!-- 1e. Profile Przyrządów Pomiarowych -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
             <span>🛠️</span> 1e. Tabela Przyrządów Pomiarowych
           </h2>
-          <!-- Przełącznik profili -->
           <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px]">
             <button onclick="ustawProfilMiernika(1)" id="pMiernik1Btn" class="px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white">
               Miernik 1 (MPI-540)
@@ -426,7 +425,7 @@
         </div>
       </div>
 
-      <!-- 10. Cyfrowy Podpis Odręczny & Uprawnienia SEP -->
+      <!-- 10. Cyfrowy Podpis Odręczny -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex justify-between items-center mb-3">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -434,7 +433,7 @@
           </h2>
           <button onclick="wyczyscPodpis()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Wyczyść podpis</button>
         </div>
-        <p class="text-[11px] text-slate-400 mb-2">Złóż parafkę palcem lub rysikiem. Trafi ona bezpośrednio na stronę 6 w pole podpisu pomiarowca:</p>
+        <p class="text-[11px] text-slate-400 mb-2">Złóż parafkę palcem lub rysikiem. Trafi ona na stronę 6 w pole "Szymon Kacprzak":</p>
         <div class="bg-white rounded-xl overflow-hidden border-2 border-indigo-500/40 shadow-inner">
           <canvas id="sigCanvas" class="w-full h-28 block touch-none cursor-crosshair bg-white"></canvas>
         </div>
@@ -483,9 +482,7 @@
         </h3>
         <button onclick="zamknijHistorie()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
       </div>
-      <div id="historiaLista" class="flex-1 overflow-auto space-y-2 pr-1">
-        <!-- Generowane dynamicznie -->
-      </div>
+      <div id="historiaLista" class="flex-1 overflow-auto space-y-2 pr-1"></div>
       <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs">
         <button onclick="wyczyscCalaHistorie()" class="text-rose-400 hover:text-rose-300">Wyczyść całe archiwum</button>
         <button onclick="zamknijHistorie()" class="bg-slate-800 text-white font-bold px-4 py-2 rounded-xl">Zamknij</button>
@@ -529,7 +526,7 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const DB_NAME = "ProtokolantDB_A2_v8_final";
+    const DB_NAME = "ProtokolantDB_A2_v9_dokladna";
     let db;
     const initDB = () => new Promise((resolve) => {
       const req = indexedDB.open(DB_NAME, 1);
@@ -544,88 +541,88 @@
       req.onerror = () => resolve(null);
     });
 
-    // TWOJA DOKŁADNA SKALIBROWANA MATRYCA + KOREKTA HOVERBUD + STRONA 6 (UPRAWNIENIA I PODPIS)
+    // TWOJA DOKŁADNA SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH
     const bazowaMatryca = {
-      "nr_protokolu": {"page":1,"x":205,"y":78,"fsize":13},
-      "podwykonawca": {"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
-      "rok": {"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
-      "nr_seryjny": {"page":1,"x":93,"y":127,"fsize":13},
-      "typ_maszyny": {"page":1,"x":286,"y":313,"fsize":11},
-      "adres": {"page":1,"x":303,"y":337,"fsize":10.5},
-      "data_dd": {"page":1,"x":302,"y":359,"fsize":11},
-      "data_mm": {"page":1,"x":348,"y":361,"fsize":11},
-      "data_rr": {"page":1,"x":402,"y":361,"fsize":11},
-      "m_nazwa": {"page":1,"x":101,"y":429,"fsize":11},
-      "m_typ": {"page":1,"x":234,"y":430,"fsize":11},
-      "m_nr": {"page":1,"x":346,"y":427,"fsize":11},
-      "m_zast": {"page":1,"x":455,"y":430,"fsize":11},
-      "swiadectwo": {"page":1,"x":120,"y":504,"fsize":10.5},
-      "in_p": {"page":1,"x":315,"y":610,"fsize":11,"txt":"10"},
-      "typ_in_p": {"page":1,"x":371,"y":607,"fsize":11,"txt":"B"},
-      "din_p": {"page":1,"x":311,"y":638,"fsize":11,"txt":"0,03"},
-      "typ_din_p": {"page":1,"x":372,"y":639,"fsize":11,"txt":"AC"},
-      "in_prz": {"page":1,"x":307,"y":687,"fsize":11,"txt":"16"},
-      "typ_in_prz": {"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
-      "din_prz": {"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
-      "typ_din_prz": {"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
+      "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
+      "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
+      "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
+      "nr_seryjny":{"page":1,"x":93,"y":127,"fsize":13},
+      "typ_maszyny":{"page":1,"x":286,"y":313,"fsize":11},
+      "adres":{"page":1,"x":303,"y":337,"fsize":10.5},
+      "data_dd":{"page":1,"x":302,"y":359,"fsize":11},
+      "data_mm":{"page":1,"x":348,"y":361,"fsize":11},
+      "data_rr":{"page":1,"x":402,"y":361,"fsize":11},
+      "m_nazwa":{"page":1,"x":101,"y":429,"fsize":11},
+      "m_typ":{"page":1,"x":234,"y":430,"fsize":11},
+      "m_nr":{"page":1,"x":346,"y":427,"fsize":11},
+      "m_zast":{"page":1,"x":455,"y":430,"fsize":11},
+      "swiadectwo":{"page":1,"x":120,"y":504,"fsize":10.5},
+      "in_p":{"page":1,"x":315,"y":610,"fsize":11,"txt":"10"},
+      "typ_in_p":{"page":1,"x":371,"y":607,"fsize":11,"txt":"B"},
+      "din_p":{"page":1,"x":311,"y":638,"fsize":11,"txt":"0,03"},
+      "typ_din_p":{"page":1,"x":372,"y":639,"fsize":11,"txt":"AC"},
+      "in_prz":{"page":1,"x":307,"y":687,"fsize":11,"txt":"16"},
+      "typ_in_prz":{"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
+      "din_prz":{"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
+      "typ_din_prz":{"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
       
-      "napiecie": {"page":2,"x":158,"y":100,"fsize":11.5},
-      "czest": {"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
-      "iz1": {"page":2,"x":222,"y":287,"fsize":11},
-      "iz_req1": {"page":2,"x":333,"y":286,"fsize":11},
-      "iz2": {"page":2,"x":222,"y":304,"fsize":11},
-      "iz_req2": {"page":2,"x":333,"y":302,"fsize":11},
-      "iz3": {"page":2,"x":220,"y":320,"fsize":11},
-      "iz_req3": {"page":2,"x":330,"y":318,"fsize":11},
-      "temp": {"page":2,"x":220,"y":345,"fsize":11},
-      "wilg": {"page":2,"x":211,"y":370,"fsize":11},
-      "prob": {"page":2,"x":209,"y":396,"fsize":11,"txt":"500"},
-      "pe_0": {"page":2,"x":405,"y":505,"fsize":11},
-      "pe_1": {"page":2,"x":406,"y":534,"fsize":11},
-      "pe_2": {"page":2,"x":406,"y":555,"fsize":11},
-      "pe_3": {"page":2,"x":402,"y":572,"fsize":11},
-      "pe_4": {"page":2,"x":402,"y":590,"fsize":11},
-      "pe_5": {"page":2,"x":406,"y":608,"fsize":11},
-      "pe_6": {"page":2,"x":405,"y":625,"fsize":11},
-      "pe_7": {"page":2,"x":404,"y":641,"fsize":11},
+      "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
+      "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
+      "iz1":{"page":2,"x":222,"y":287,"fsize":11},
+      "iz_req1":{"page":2,"x":333,"y":286,"fsize":11},
+      "iz2":{"page":2,"x":222,"y":304,"fsize":11},
+      "iz_req2":{"page":2,"x":333,"y":302,"fsize":11},
+      "iz3":{"page":2,"x":220,"y":320,"fsize":11},
+      "iz_req3":{"page":2,"x":330,"y":318,"fsize":11},
+      "temp":{"page":2,"x":220,"y":345,"fsize":11},
+      "wilg":{"page":2,"x":211,"y":370,"fsize":11},
+      "prob":{"page":2,"x":209,"y":396,"fsize":11,"txt":"500"},
+      "pe_0":{"page":2,"x":405,"y":505,"fsize":11},
+      "pe_1":{"page":2,"x":406,"y":534,"fsize":11},
+      "pe_2":{"page":2,"x":406,"y":555,"fsize":11},
+      "pe_3":{"page":2,"x":402,"y":572,"fsize":11},
+      "pe_4":{"page":2,"x":402,"y":590,"fsize":11},
+      "pe_5":{"page":2,"x":406,"y":608,"fsize":11},
+      "pe_6":{"page":2,"x":405,"y":625,"fsize":11},
+      "pe_7":{"page":2,"x":404,"y":641,"fsize":11},
       
-      "u1": {"page":3,"x":111,"y":197,"fsize":11},
-      "u2": {"page":3,"x":112,"y":216,"fsize":11},
-      "u3": {"page":3,"x":114,"y":232,"fsize":11},
-      "u_rx": {"page":3,"x":185,"y":215,"fsize":11},
-      "u_kp": {"page":3,"x":263,"y":214,"fsize":11},
-      "u_r": {"page":3,"x":331,"y":217,"fsize":11},
-      "u_dop": {"page":3,"x":411,"y":217,"fsize":11},
-      "rcd_m_tx5": {"page":3,"x":384,"y":660,"fsize":11},
-      "rcd_m_tx1": {"page":3,"x":385,"y":679,"fsize":11},
-      "rcd_m_i": {"page":3,"x":274,"y":693,"fsize":11},
-      "rcd_m_ub": {"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
+      "u1":{"page":3,"x":111,"y":197,"fsize":11},
+      "u2":{"page":3,"x":112,"y":216,"fsize":11},
+      "u3":{"page":3,"x":114,"y":232,"fsize":11},
+      "u_rx":{"page":3,"x":185,"y":215,"fsize":11},
+      "u_kp":{"page":3,"x":263,"y":214,"fsize":11},
+      "u_r":{"page":3,"x":331,"y":217,"fsize":11},
+      "u_dop":{"page":3,"x":411,"y":217,"fsize":11},
+      "rcd_m_tx5":{"page":3,"x":384,"y":660,"fsize":11},
+      "rcd_m_tx1":{"page":3,"x":385,"y":679,"fsize":11},
+      "rcd_m_i":{"page":3,"x":274,"y":693,"fsize":11},
+      "rcd_m_ub":{"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
       
-      "rcd_p_tx5": {"page":4,"x":381,"y":195,"fsize":11},
-      "rcd_p_tx1": {"page":4,"x":383,"y":213,"fsize":11},
-      "rcd_p_i": {"page":4,"x":276,"y":227,"fsize":11},
-      "rcd_p_ub": {"page":4,"x":266,"y":245,"fsize":11,"txt":"0,3"},
-      "p9_in_1": {"page":4,"x":145,"y":480,"fsize":11},
-      "p9_k_1": {"page":4,"x":195,"y":480,"fsize":11},
-      "p9_ia_1": {"page":4,"x":260,"y":480,"fsize":11},
-      "p9_zsm_1": {"page":4,"x":367,"y":474,"fsize":11},
-      "p9_zsd_1": {"page":4,"x":420,"y":480,"fsize":11},
-      "p9_in_2": {"page":4,"x":145,"y":520,"fsize":11},
-      "p9_k_2": {"page":4,"x":195,"y":520,"fsize":11},
-      "p9_ia_2": {"page":4,"x":260,"y":520,"fsize":11},
-      "p9_zsm_2": {"page":4,"x":365,"y":522,"fsize":11},
-      "p9_zsd_2": {"page":4,"x":420,"y":520,"fsize":11},
+      "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
+      "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
+      "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
+      "rcd_p_ub":{"page":4,"x":266,"y":245,"fsize":11,"txt":"0,3"},
+      "p9_in_1":{"page":4,"x":145,"y":480,"fsize":11},
+      "p9_k_1":{"page":4,"x":195,"y":480,"fsize":11},
+      "p9_ia_1":{"page":4,"x":260,"y":480,"fsize":11},
+      "p9_zsm_1":{"page":4,"x":367,"y":474,"fsize":11},
+      "p9_zsd_1":{"page":4,"x":420,"y":480,"fsize":11},
+      "p9_in_2":{"page":4,"x":145,"y":520,"fsize":11},
+      "p9_k_2":{"page":4,"x":195,"y":520,"fsize":11},
+      "p9_ia_2":{"page":4,"x":260,"y":520,"fsize":11},
+      "p9_zsm_2":{"page":4,"x":365,"y":522,"fsize":11},
+      "p9_zsd_2":{"page":4,"x":420,"y":520,"fsize":11},
       
-      "nd1": {"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
-      "nd2": {"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
+      "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
+      "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-      // Strona 6: Uprawnienia SEP i Podpis
-      "podpis": {"page":6,"x":380,"y":450,"fsize":13,"txt":"Szymon Kacprzak"},
-      "upr1": {"page":6,"x":220,"y":485,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
-      "upr2": {"page":6,"x":220,"y":504,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"}
+      // Strona 6: Dokładne pozycje zgodne ze zdjęciem
+      "podpis":{"page":6,"x":104,"y":435,"fsize":13,"txt":"Szymon Kacprzak"},
+      "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
+      "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"}
     };
 
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v8")) || bazowaMatryca;
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v9_dokladna")) || bazowaMatryca;
     let loadedPdfBytes = null;
     let pdfDocPreview = null;
     let currentPage = 1;
@@ -666,7 +663,7 @@
       localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
     }
 
-    // OCR ZE ZDJĘCIA TABLICZKI (Tesseract.js)
+    // OCR ZE ZDJĘCIA TABLICZKI
     document.getElementById("ocrInput").addEventListener("change", async (e) => {
       const f = e.target.files[0];
       if (f) przetworzZdjecieTabliczki(f);
@@ -684,32 +681,30 @@
     });
 
     async function przetworzZdjecieTabliczki(file) {
-      pokazToast("⏳ Analiza OCR", "Trwa odczytywanie tabliczki ze zdjęcia...");
+      pokazToast("⏳ Analiza OCR", "Trwa odczytywanie tabliczki...");
       try {
         const worker = await Tesseract.createWorker("pol+eng");
         const ret = await worker.recognize(file);
         const text = ret.data.text;
         await worker.terminate();
 
-        // 1. Numer seryjny (np. 25/CQU121000159)
         const snMatch = text.match(/([0-9]{2}\/[A-Z0-9]{8,})/i) || text.match(/(?:S\/N|SN)[:\s]*([0-9A-Z\/]+)/i);
         if (snMatch) {
           document.getElementById("nr_seryjny").value = snMatch[1].trim();
         }
 
-        // 2. Typ maszyny (np. QR NFM 8.4 A0000 W5VYY)
         const typeMatch = text.match(/(QR\s*NFM[^\n\r]+)/i) || text.match(/(?:TYPE|TYP)[:\s]*([^\n\r]+)/i);
         if (typeMatch) {
           document.getElementById("typ_maszyny").value = typeMatch[1].trim();
         }
 
-        pokazToast("✅ Sukces OCR", `Odczytano S/N: ${document.getElementById("nr_seryjny").value}`);
+        pokazToast("✅ Sukces OCR", `S/N: ${document.getElementById("nr_seryjny").value}`);
       } catch (err) {
-        pokazToast("❌ Błąd OCR", "Nie udało się odczytać tekstu: " + err.message);
+        pokazToast("❌ Błąd OCR", err.message);
       }
     }
 
-    // ROZPOZNAWANIE MOWY (DYKTOWANIE GŁOSEM)
+    // ASYSTENT GŁOSOWY
     let recognition = null;
     let czyNagrywa = false;
 
@@ -745,28 +740,25 @@
         recognition.start();
         document.getElementById("btnGlos").className = "flex items-center gap-1 bg-rose-600 text-white border border-rose-500 px-2.5 py-1 rounded-lg font-bold animate-pulse";
         document.getElementById("micText").innerText = "Słucham...";
-        pokazToast("🎙️ Mikrofon aktywny", "Mów: 'napięcie 231', 'uziemienie 6.8', 'pętla 0.95'...");
+        pokazToast("🎙️ Mikrofon aktywny", "Mów wartości pomiarowe...");
       } else {
         czyNagrywa = false;
         recognition.stop();
         document.getElementById("btnGlos").className = "flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg font-bold transition";
         document.getElementById("micText").innerText = "Dyktuj";
-        pokazToast("🎙️ Zatrzymano", "Rozpoznawanie mowy wyłączone");
+        pokazToast("🎙️ Zatrzymano", "Rozpoznawanie wyłączone");
       }
     }
 
     function parsujGlos(t) {
       pokazToast("🗣️ Usłyszano:", t);
-      // Napięcie
       if (t.includes("napięcie") || t.includes("wolt")) {
         const num = t.match(/\d+[\.,]?\d*/);
         if (num) {
           document.getElementById("napiecie").value = num[0].replace('.', ',');
           walidujNormy();
         }
-      }
-      // Uziemienie
-      else if (t.includes("uziemienie") || t.includes("uziom")) {
+      } else if (t.includes("uziemienie") || t.includes("uziom")) {
         const num = t.match(/\d+[\.,]?\d*/);
         if (num) {
           const v = num[0].replace('.', ',');
@@ -775,23 +767,17 @@
           document.getElementById("u3").value = v;
           obliczUziemienie();
         }
-      }
-      // Pętla zwarcia
-      else if (t.includes("pętla") || t.includes("zwarcie")) {
+      } else if (t.includes("pętla") || t.includes("zwarcie")) {
         const num = t.match(/\d+[\.,]?\d*/);
         if (num) {
           const v = num[0].replace('.', ',');
           document.getElementById("p9_zsm_1").value = v;
           document.getElementById("p9_zsm_2").value = v;
         }
-      }
-      // Temperatura
-      else if (t.includes("temperatura") || t.includes("stopni")) {
+      } else if (t.includes("temperatura")) {
         const num = t.match(/\d+[\.,]?\d*/);
         if (num) document.getElementById("temp").value = num[0].replace('.', ',');
-      }
-      // Wilgotność
-      else if (t.includes("wilgotność") || t.includes("procent")) {
+      } else if (t.includes("wilgotność")) {
         const num = t.match(/\d+[\.,]?\d*/);
         if (num) document.getElementById("wilg").value = num[0].replace('.', ',');
       }
@@ -802,10 +788,10 @@
       document.getElementById("toastTitle").innerText = tytul;
       document.getElementById("toastMessage").innerText = tresc;
       toast.classList.remove("hidden");
-      setTimeout(() => toast.classList.add("hidden"), 4000);
+      setTimeout(() => toast.classList.add("hidden"), 3500);
     }
 
-    // SIGNATURE PAD (ODRĘCZNY PODPIS)
+    // SIGNATURE PAD
     const sigCanvas = document.getElementById("sigCanvas");
     const sigCtx = sigCanvas.getContext("2d");
     let rysuje = false;
@@ -816,7 +802,7 @@
       sigCanvas.width = rect.width * 2;
       sigCanvas.height = rect.height * 2;
       sigCtx.scale(2, 2);
-      sigCtx.lineWidth = 2.2;
+      sigCtx.lineWidth = 2.4;
       sigCtx.lineCap = "round";
       sigCtx.strokeStyle = "#0f2b6b";
     }
@@ -850,7 +836,7 @@
       maPodpis = false;
     }
 
-    // HISTORIA I ARCHIWUM PROTOKOŁÓW
+    // HISTORIA I ARCHIWIZACJA
     function pobierzHistorie() {
       return JSON.parse(localStorage.getItem("archiwum_protokolow")) || [];
     }
@@ -869,7 +855,7 @@
         zs: document.getElementById("p9_zsm_1").value
       };
       archiwum.unshift(snapshot);
-      if (archiwum.length > 20) archiwum.pop(); // Max 20 maszyn
+      if (archiwum.length > 20) archiwum.pop();
       localStorage.setItem("archiwum_protokolow", JSON.stringify(archiwum));
       odswiezLicznikHistorii();
     }
@@ -918,7 +904,7 @@
         document.getElementById("typ_maszyny").value = item.typ_maszyny;
         document.getElementById("napiecie").value = item.napiecie;
         zamknijHistorie();
-        pokazToast("📋 Wczytano dane", `Przywrócono maszynę: ${item.nr_seryjny}`);
+        pokazToast("📋 Wczytano dane", `Przywrócono: ${item.nr_seryjny}`);
       }
     }
 
@@ -937,7 +923,7 @@
       }
     }
 
-    // WALIDACJA I KALKULACJE
+    // KALKULACJE I WALIDACJA
     const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
     const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -1010,7 +996,7 @@
       }
     }
 
-    // SILNIK PODGLĄDU PDF.JS I PRZECIĄGANIA
+    // PODGLĄD PDF & DRAG & DROP
     async function loadTemplate() {
       await initDB();
       loadedPdfBytes = await getPDF();
@@ -1029,7 +1015,7 @@
         document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
         initPdfPreview();
       } else {
-        document.getElementById("szablonStatusText").innerHTML = "Wybierz plik <strong>szablon.pdf</strong>:";
+        document.getElementById("szablonStatusText").innerHTML = "Wskaż plik <strong>szablon.pdf</strong>:";
       }
       odswiezLicznikHistorii();
       resizeSigCanvas();
@@ -1129,10 +1115,12 @@
       function onPointerUp(ev) {
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
       }
 
       window.addEventListener("pointermove", onPointerMove, { passive: false });
       window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointercancel", onPointerUp);
     }
 
     function nudge(dx, dy) {
@@ -1185,14 +1173,14 @@
     });
 
     function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v8", JSON.stringify(matryca));
+      localStorage.setItem("matryca_paczkomat_v9_dokladna", JSON.stringify(matryca));
       alert("✅ Matryca współrzędnych została trwale zapisana!");
     }
 
     function przywrocWspolrzedne() {
-      if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
+if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
         matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-        localStorage.removeItem("matryca_paczkomat_v8");
+        localStorage.removeItem("matryca_paczkomat_v9_dokladna");
         renderPage(currentPage);
       }
     }
@@ -1234,7 +1222,7 @@
       }
     }
 
-    // GENEROWANIE DOKUMENTU PDF Z PODPISEM I ARCHIWIZACJĄ
+    // GENEROWANIE WYDRUKU PDF Z PODPISEM NA STRONIE 6
     async function generujWydrukPDF() {
       const btn = document.getElementById("btnPobierz");
       btn.innerText = "⏳ Generuję...";
@@ -1289,7 +1277,8 @@
             const el = document.getElementById(id);
             if (el) val = el.value;
           }
-          // Pomijamy tekstowy podpis na str. 6, jeśli użytkownik narysował własny podpis
+          
+          // Jeśli złożono podpis na Signature Pad, pomijamy zwykły tekst w polu "podpis"
           if (id === "podpis" && maPodpis) continue;
 
           if (val) {
@@ -1297,18 +1286,19 @@
           }
         }
 
-        // Wypalenie odręcznego podpisu jako obraz PNG na str. 6 (jeśli narysowano)
+        // Naniesienie podpisu odręcznego DOKŁADNIE w miejscu "Szymon Kacprzak"
         if (maPodpis) {
           const sigData = sigCanvas.toDataURL("image/png");
           const sigImage = await pdfDoc.embedPng(sigData);
           const p6 = pages[5];
           const h6 = p6.getSize().height;
-          // Pozycja podpisu (x: 370, y: 450)
+          
+          const podCoords = matryca["podpis"] || { x: 104, y: 435 };
           p6.drawImage(sigImage, {
-            x: 370,
-            y: h6 - 475,
-            width: 140,
-            height: 40
+            x: podCoords.x - 15,
+            y: h6 - podCoords.y - 25,
+            width: 110,
+            height: 36
           });
         }
 
@@ -1320,7 +1310,6 @@
         link.download = `Protokol_${sn}.pdf`;
         link.click();
 
-        // Automatyczny zapis do historii wykonanych maszyn
         zapiszDoHistorii();
 
       } catch (err) {
