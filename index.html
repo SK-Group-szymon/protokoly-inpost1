@@ -5,15 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Protokolant Paczkomatów A2 • System Ekspercki</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PDF.js do interaktywnego renderowania -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- pdf-lib + fontkit do generowania PDF z polskimi znakami -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
 
-  <!-- Google Fonts: Inter / Plus Jakarta Sans & Caveat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,29 +22,6 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             hand: ['"Caveat"', 'cursive']
-          },
-          colors: {
-            brand: {
-              50: '#eef2ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca'
-            }
-          },
-          animation: {
-            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'slide-up': 'slideUp 0.25s ease-out forwards',
-            'fade-in': 'fadeIn 0.2s ease-out forwards'
-          },
-          keyframes: {
-            slideUp: {
-              '0%': { transform: 'translateY(100%)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' }
-            },
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' }
-            }
           }
         }
       }
@@ -56,9 +29,8 @@
   </script>
 
   <style>
-    /* Szklane panele i stylizacja mobilna */
     .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -72,7 +44,6 @@
       border-color: #6366f1;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
-    /* Ruchomy kafelek na arkuszu PDF */
     .drag-box {
       position: absolute;
       cursor: grab;
@@ -89,11 +60,9 @@
       color: #0f2b6b;
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .drag-box:active {
-      cursor: grabbing;
-    }
+    .drag-box:active { cursor: grabbing; }
     .drag-box.selected {
       border: 2px solid #ef4444 !important;
       background: rgba(254, 242, 242, 0.98) !important;
@@ -101,20 +70,12 @@
       z-index: 50;
       box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35), 0 8px 16px rgba(0,0,0,0.3) !important;
     }
-    /* Cienki pasek przewijania */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #020617; }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #334155; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-indigo-600 selection:text-white pb-20 sm:pb-8">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-indigo-600 selection:text-white pb-24 sm:pb-8">
 
-  <!-- ========================================================= -->
-  <!-- GÓRNY PASEK NAWIGACJI (HEADER)                            -->
-  <!-- ========================================================= -->
+  <!-- Pasek górny -->
   <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-3 sm:px-6 py-3 flex items-center justify-between">
-    <!-- Logo i Tytuł -->
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
         <span class="text-white font-extrabold text-xl">⚡</span>
@@ -124,11 +85,11 @@
           <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-mono">Sonel MPI-540 • Standard 2026</p>
+        <p class="text-[11px] text-slate-400 font-mono">Edytor Pomiarów</p>
       </div>
     </div>
 
-    <!-- Przełącznik Zakładek (Centrum) -->
+    <!-- Przełącznik widoków -->
     <div class="hidden sm:flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs">
       <button onclick="switchTab('form')" id="tabBtnForm" class="px-4 py-2 rounded-xl font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
         📋 Dane & AI
@@ -138,7 +99,7 @@
       </button>
     </div>
 
-    <!-- Przyciski Szybkiej Akcji -->
+    <!-- Przyciski akcji -->
     <div class="flex items-center gap-2">
       <button onclick="aiUzupelnijWszystko()" class="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 transition-all">
         <span>✨</span> AI Dopełnij
@@ -149,7 +110,7 @@
     </div>
   </header>
 
-  <!-- Pasek stanu bazy szablonu -->
+  <!-- Pasek stanu szablonu -->
   <div id="dropZoneNotice" class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-500/20 px-4 py-2 text-xs flex justify-between items-center text-amber-200">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -161,56 +122,81 @@
     </label>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- TREŚĆ GŁÓWNA (KONTENER WIDOKÓW)                          -->
-  <!-- ========================================================= -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5 space-y-4">
 
-    <!-- ======================================================= -->
-    <!-- WIDOK 1: INTELIGENTNY FORMULARZ I POMIARY               -->
-    <!-- ======================================================= -->
-    <div id="viewForm" class="space-y-4 animate-fade-in">
-
-      <!-- Pasek AI na telefonach -->
+    <!-- ============================================== -->
+    <!-- WIDOK 1: INTELIGENTNY FORMULARZ POMIAROWY      -->
+    <!-- ============================================== -->
+    <div id="viewForm" class="space-y-4">
       <div class="sm:hidden">
         <button onclick="aiUzupelnijWszystko()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-xs font-extrabold flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/25 active:scale-98 transition">
           <span>✨</span> Inteligentne dopełnienie braków (AI)
         </button>
       </div>
 
-      <!-- Karta 1: Identyfikacja Paczkomatu -->
+      <!-- 1. Identyfikacja Paczkomatu & Rozdzielona data -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>📍</span> 1. Identyfikacja Paczkomatu
-          </h2>
-          <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono">Sekcja 1</span>
-        </div>
+        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>📍</span> 1. Identyfikacja Paczkomatu
+        </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Numer protokołu</label>
-            <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white font-mono font-bold">
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer protokołu</label>
+            <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono font-bold">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Data wykonania badania</label>
-            <input type="text" id="data_pomiaru" value="10/09/2026 r." class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white">
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Data badania (3 osobne okienka: DD / MM / RRRR)</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <input type="text" id="data_dd" value="10" placeholder="DD" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
+              <input type="text" id="data_mm" value="09" placeholder="MM" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
+              <input type="text" id="data_rr" value="2026" placeholder="RRRR" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
+            </div>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Numer seryjny maszyny (kod kreskowy)</label>
-            <input type="text" id="nr_seryjny" value="25/CQU121000111" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-amber-300 font-mono font-extrabold tracking-wider text-sm">
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny</label>
+            <input type="text" id="nr_seryjny" value="25/CQU121000111" class="w-full glass-input rounded-xl px-3 py-2 text-amber-300 font-mono font-extrabold tracking-wider">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Typ maszyny (tabliczka znamionowa)</label>
-            <input type="text" id="typ_maszyny" value="QR NFM 8.4A0000W5VYY" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white font-mono">
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny</label>
+            <input type="text" id="typ_maszyny" value="QR NFM 8.4A0000W5VYY" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Dokładny adres instalacji</label>
-            <input type="text" id="adres" value="02-495 WARSZAWA Michałowicza 19" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white">
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Dokładny adres instalacji</label>
+            <input type="text" id="adres" value="02-495 WARSZAWA Michałowicza 19" class="w-full glass-input rounded-xl px-3 py-2 text-white">
           </div>
         </div>
       </div>
 
-      <!-- Karta 2: Parametry Sieci Zasilającej -->
+      <!-- 1e. Edycja Przyrządu Pomiarowego -->
+      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
+        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>🛠️</span> 1e. Tabela Przyrządów Pomiarowych
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Nazwa przyrządu</label>
+            <input type="text" id="m_nazwa" value="Sonel" class="w-full glass-input rounded-xl p-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Typ</label>
+            <input type="text" id="m_typ" value="MPI-540" class="w-full glass-input rounded-xl p-2 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Nr fabryczny</label>
+            <input type="text" id="m_nr" value="EK 1709" class="w-full glass-input rounded-xl p-2 text-amber-300 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Zastosowanie</label>
+            <input type="text" id="m_zast" value="Pomiar" class="w-full glass-input rounded-xl p-2 text-white">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1 text-[10px]">Świadectwo wzorcowania (Nr i data ważności)</label>
+          <input type="text" id="swiadectwo" value="289834/25 do dnia 29.09.2026" class="w-full glass-input rounded-xl p-2 text-white font-mono">
+        </div>
+      </div>
+
+      <!-- 2. Sieć Zasilająca -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -220,163 +206,218 @@
         </div>
         <div class="grid grid-cols-3 gap-3 text-xs">
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Napięcie Uo [V]</label>
-            <input type="text" inputmode="decimal" id="napiecie" value="221,7" oninput="walidujNormy()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white font-mono font-bold text-center">
-            <span class="text-[10px] text-slate-500 mt-1 block text-center">207 – 253 V</span>
+            <label class="block text-slate-400 mb-1 text-[11px] text-center">Napięcie Uo [V]</label>
+            <input type="text" inputmode="decimal" id="napiecie" value="221,7" oninput="walidujNormy()" class="w-full glass-input rounded-xl p-2 text-white font-mono font-bold text-center">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Temperatura [°C]</label>
-            <input type="text" inputmode="decimal" id="temp" value="27,9" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white text-center">
-            <span class="text-[10px] text-slate-500 mt-1 block text-center">Otoczenie</span>
+            <label class="block text-slate-400 mb-1 text-[11px] text-center">Temperatura [°C]</label>
+            <input type="text" inputmode="decimal" id="temp" value="27,9" class="w-full glass-input rounded-xl p-2 text-white text-center">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1.5 text-[11px] font-medium">Wilgotność [%]</label>
-            <input type="text" inputmode="decimal" id="wilg" value="51,5" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-white text-center">
-            <span class="text-[10px] text-slate-500 mt-1 block text-center">Względna</span>
+            <label class="block text-slate-400 mb-1 text-[11px] text-center">Wilgotność [%]</label>
+            <input type="text" inputmode="decimal" id="wilg" value="51,5" class="w-full glass-input rounded-xl p-2 text-white text-center">
           </div>
-        </div>
-        <!-- Alert napięcia -->
-        <div id="vAlert" class="hidden mt-3 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-          <span>⚠️</span> <strong>Błąd normy:</strong> Napięcie Uo wykracza poza dopuszczalne 230 V ±10%!
         </div>
       </div>
 
-      <!-- Karta 3: Rezystancja Uziemienia (Kalkulator 3p) -->
+      <!-- 4. Rezystancja Izolacji (z polem Wartość dopuszczalna = 1) -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>⏚</span> 3. Rezystancja Uziemienia (Wymóg ≤ 10,0 Ω)
-          </h2>
-          <span id="uBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2.5 text-xs mb-3.5">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] font-medium text-center">Pomiar 1 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u1" value="6,78" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2.5 text-white font-mono text-center">
+        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Przewód Zasilający)
+        </h2>
+        <div class="space-y-2 text-xs">
+          <div class="grid grid-cols-3 gap-2 font-bold text-slate-400 text-[10px] text-center px-1">
+            <span>Wynik pomiaru [MΩ]</span>
+            <span>Wymagana wartość M[Ω]</span>
+            <span>Ocena</span>
           </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] font-medium text-center">Pomiar 2 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u2" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2.5 text-white font-mono text-center">
+          <!-- L-N -->
+          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+            <input type="text" id="iz1" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
+            <input type="text" id="iz_req1" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
+            <input type="text" id="iz_ocena1" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] font-medium text-center">Pomiar 3 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2.5 text-white font-mono text-center">
+          <!-- L-PE -->
+          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+            <input type="text" id="iz2" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
+            <input type="text" id="iz_req2" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
+            <input type="text" id="iz_ocena2" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
-        </div>
-
-        <!-- Wynik obliczeń automatycznych -->
-        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3.5 flex justify-around text-center text-xs">
-          <div>
-            <span class="text-slate-500 block text-[10px] uppercase font-bold">Średnia Rx</span>
-            <span id="rxDisplay" class="font-extrabold text-amber-400 font-mono text-sm sm:text-base">6,79 Ω</span>
+          <!-- N-PE -->
+          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+            <input type="text" id="iz3" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
+            <input type="text" id="iz_req3" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
+            <input type="text" id="iz_ocena3" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
-          <div class="border-l border-slate-800/80 pl-4">
-            <span class="text-slate-500 block text-[10px] uppercase font-bold">Współczynnik</span>
-            <span class="font-extrabold text-slate-300 font-mono text-sm sm:text-base">kp = 1,2</span>
-          </div>
-          <div class="border-l border-slate-800/80 pl-4">
-            <span class="text-slate-500 block text-[10px] uppercase font-bold">Wynik R = Rx × kp</span>
-            <span id="rDisplay" class="font-black text-emerald-400 font-mono text-base sm:text-lg">8,15 Ω</span>
-          </div>
-        </div>
-        <div id="uAlert" class="hidden mt-3 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-          <span>🚨</span> <strong>Zagrożenie:</strong> Wynik uziemienia przekracza 10,0 Ω! Wymagane dodatkowe szpilki uziomu.
         </div>
       </div>
 
-      <!-- Karta 4: Ciągłość Połączeń Wyrównawczych (PE) -->
+      <!-- 5. Ciągłość PE -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>🔗</span> 4. Ciągłość PE (Norma ≤ 0,20 Ω)
+            <span>🔗</span> 5. Ciągłość PE (Norma ≤ 0,20 Ω)
           </h2>
           <button onclick="aiGenerujPE()" class="text-xs font-bold text-indigo-400 hover:text-indigo-300">✨ Wstaw normowe</button>
         </div>
-        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer">
-          <!-- Wstrzykiwane przez JS -->
+        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
+      </div>
+
+      <!-- 6. Uziemienie 6.1 (Kompletne 8 pól) -->
+      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+            <span>⏚</span> 6. Rezystancja Uziemienia (Pkt 6.1 - Wszystkie Pola)
+          </h2>
+          <span id="uBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 1 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u1" value="6,78" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 2 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u2" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 3 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Średnia Rx [Ω]</label>
+            <input type="text" id="u_rx" value="6,79" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-amber-300">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Współczynnik kp</label>
+            <input type="text" id="u_kp" value="1,2" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-white">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Wynik R [Ω]</label>
+            <input type="text" id="u_r" value="8,15" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Dopuszczalna [Ω]</label>
+            <input type="text" id="u_dop" value="10" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-white">
+          </div>
+          <div class="col-span-2 sm:col-span-1">
+            <label class="block text-slate-400 mb-1 text-[10px] text-center">Ocena</label>
+            <input type="text" id="u_ocena" value="TAK" class="w-full glass-input rounded-xl p-1.5 text-center font-bold text-emerald-400">
+          </div>
         </div>
       </div>
 
-      <!-- Karta 5: Wyłączniki RCD i Pętla zwarcia Zs -->
+      <!-- 7 & 8. Wyłączniki RCD -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>⚡</span> 5. Ochrona RCD i Pętla Zwarcia Zs
+          <span>⚡</span> 7 i 8. Parametry Wyłączników RCD (30 mA AC)
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs mb-4">
-          <!-- RCD w maszynie -->
-          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2.5">
-            <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie (30 mA AC)</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
+            <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie</span>
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <span class="text-[10px] text-slate-400 block mb-1">Czas tΔ (x5 / x1) [ms]</span>
                 <div class="flex gap-1.5">
-                  <input type="text" id="rcd_m_tx5" value="6" class="w-1/2 glass-input rounded-xl p-2 text-center font-mono">
-                  <input type="text" id="rcd_m_tx1" value="18" class="w-1/2 glass-input rounded-xl p-2 text-center font-mono">
+                  <input type="text" id="rcd_m_tx5" value="6" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
+                  <input type="text" id="rcd_m_tx1" value="18" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
                 </div>
               </div>
               <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Prąd zadziałania IΔn</span>
-                <input type="text" inputmode="decimal" id="rcd_m_i" value="17,1" class="w-full glass-input rounded-xl p-2 font-mono text-center">
+                <span class="text-[10px] text-slate-400 block mb-1">Prąd IΔn [mA]</span>
+                <input type="text" inputmode="decimal" id="rcd_m_i" value="17,1" class="w-full glass-input rounded-xl p-1.5 font-mono text-center">
               </div>
             </div>
           </div>
-          <!-- RCD w przyłączu -->
-          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2.5">
-            <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu (30 mA AC)</span>
+          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
+            <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu</span>
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <span class="text-[10px] text-slate-400 block mb-1">Czas tΔ (x5 / x1) [ms]</span>
                 <div class="flex gap-1.5">
-                  <input type="text" id="rcd_p_tx5" value="16" class="w-1/2 glass-input rounded-xl p-2 text-center font-mono">
-                  <input type="text" id="rcd_p_tx1" value="22" class="w-1/2 glass-input rounded-xl p-2 text-center font-mono">
+                  <input type="text" id="rcd_p_tx5" value="16" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
+                  <input type="text" id="rcd_p_tx1" value="22" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
                 </div>
               </div>
               <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Prąd zadziałania IΔn</span>
-                <input type="text" inputmode="decimal" id="rcd_p_i" value="21,0" class="w-full glass-input rounded-xl p-2 font-mono text-center">
+                <span class="text-[10px] text-slate-400 block mb-1">Prąd IΔn [mA]</span>
+                <input type="text" inputmode="decimal" id="rcd_p_i" value="21,0" class="w-full glass-input rounded-xl p-1.5 font-mono text-center">
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Zs -->
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label class="text-[11px] text-slate-400 font-medium">Impedancja pętli zwarcia Zs [Ω] (Wymóg ≤ 2,95 Ω)</label>
-            <span id="zsBadge" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Zs ≤ 2,95 Ω (OK)</span>
-          </div>
-          <input type="text" inputmode="decimal" id="zs" value="1,18" oninput="walidujNormy()" class="w-full glass-input rounded-xl px-3.5 py-2.5 font-mono font-bold text-white text-xs">
-          <div id="zsAlert" class="hidden mt-3 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <span>🚨</span> <strong>Zagrożenie:</strong> Zs > 2,95 Ω! Brak ochrony przed zwarciem.
           </div>
         </div>
       </div>
 
+      <!-- 9. Badanie ochrony przeciwporażeniowej (Kompletne 12 pól tabeli) -->
+      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
+        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej (Wszystkie Pola Tabeli)
+        </h2>
+        <div class="space-y-3 text-xs">
+          <div class="hidden sm:grid grid-cols-6 gap-2 text-center text-[10px] font-bold text-slate-400 px-1">
+            <span>Prąd In [A]</span>
+            <span>Współcz. k</span>
+            <span>Prąd Ia [A]</span>
+            <span>Zs zmierzona [Ω]</span>
+            <span>Zs dopuszczalna [Ω]</span>
+            <span>Skuteczność</span>
+          </div>
+
+          <!-- Wiersz 1: Paczkomat -->
+          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+            <span class="text-[11px] font-bold text-indigo-300 block">Główne zabezpieczenie paczkomatu</span>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              <input type="text" id="p9_in_1" value="10" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_k_1" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_ia_1" value="50" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_zsm_1" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
+              <input type="text" id="p9_zsd_1" value="4,72" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
+              <input type="text" id="p9_ocena_1" value="TAK" placeholder="Ocena" class="glass-input rounded-xl p-2 text-center font-bold text-emerald-400">
+            </div>
+          </div>
+
+          <!-- Wiersz 2: Przyłącze -->
+          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+            <span class="text-[11px] font-bold text-indigo-300 block">Zabezpieczenie w przyłączu</span>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              <input type="text" id="p9_in_2" value="16" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_k_2" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_ia_2" value="80" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
+              <input type="text" id="p9_zsm_2" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
+              <input type="text" id="p9_zsd_2" value="2,95" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
+              <input type="text" id="p9_ocena_2" value="TAK" placeholder="Ocena" class="glass-input rounded-xl p-2 text-center font-bold text-emerald-400">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- ======================================================= -->
-    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF (WYSIWYG STUDIO)        -->
-    <!-- ======================================================= -->
+    <!-- ============================================== -->
+    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF (WYSIWYG)      -->
+    <!-- ============================================== -->
     <div id="viewEditor" class="hidden space-y-3 animate-fade-in">
-      <!-- Pasek narzędziowy edytora -->
       <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
-        <!-- Zmiana stron -->
         <div class="flex items-center gap-2">
           <button onclick="changePage(-1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">◀</button>
           <span id="pageNumberDisplay" class="text-xs font-mono font-extrabold text-amber-400 px-2">Strona 1 / 6</span>
           <button onclick="changePage(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">▶</button>
         </div>
 
-        <!-- Akcje zapisu -->
         <div class="flex items-center gap-2">
           <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Kliknij kafelek, aby przesunąć</span>
+          <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
+            🔄 Resetuj pozycje
+          </button>
           <button onclick="zapiszMatryce()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition">
             💾 Zapisz matrycę
           </button>
         </div>
       </div>
 
-      <!-- Obszar roboczy PDF -->
       <div class="flex justify-center overflow-auto p-2 sm:p-4 bg-slate-950 rounded-2xl border border-slate-800/80 min-h-[500px]">
         <div id="canvasWrapper" class="relative shadow-2xl bg-white rounded-lg overflow-hidden">
           <canvas id="pdfCanvas" class="block"></canvas>
@@ -387,10 +428,7 @@
 
   </main>
 
-  <!-- ========================================================= -->
-  <!-- DOLNY MOBILNY PASEK KONTROLNY & D-PAD (DLA EKRANÓW DOTYKOWYCH) -->
-  <!-- ========================================================= -->
-  <!-- Pasek nawigacji zakładek dla telefonów -->
+  <!-- Pasek nawigacji dolnej na telefonach -->
   <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-slate-800/80 px-6 py-2.5 flex justify-around">
     <button onclick="switchTab('form')" id="mTabForm" class="flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]">
       <span class="text-base">📋</span> Dane & AI
@@ -400,7 +438,7 @@
     </button>
   </div>
 
-  <!-- PŁYWAJĄCY JOYSTICK / D-PAD (Pojawia się po kliknięciu kafelka w trybie Edytora) -->
+  <!-- Pływający D-Pad na ekranach dotykowych -->
   <div id="mobileDpad" class="hidden fixed bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3 animate-slide-up">
     <div>
       <div class="text-[10px] text-slate-400 font-mono" id="dpadLabel">Wybrane: brak</div>
@@ -410,8 +448,6 @@
         <button onclick="setNudgeStep(10)" id="step10Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">10px</button>
       </div>
     </div>
-
-    <!-- Przyciski kierunkowe -->
     <div class="grid grid-cols-3 gap-1">
       <div></div>
       <button onclick="nudge(0, -currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow">▲</button>
@@ -425,14 +461,10 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- SILNIK JAVASCRIPT & LOGIKA BIZNESOWA                     -->
-  <!-- ========================================================= -->
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // 1. Trwała baza IndexedDB (szablon nie znika po odświeżeniu)
-    const DB_NAME = "ProtokolantDB_A2";
+    const DB_NAME = "ProtokolantDB_A2_v5";
     let db;
     const initDB = () => new Promise((resolve) => {
       const req = indexedDB.open(DB_NAME, 1);
@@ -447,7 +479,7 @@
       req.onerror = () => resolve(null);
     });
 
-    // 2. Precyzyjna matryca współrzędnych (X, Y) w układzie A4 (595 x 842 pt)
+    // PEŁNA MATRYCA (Strona 6 pusta, brak skreśleń, pełne 12 pól Pkt 9, 8 pól Pkt 6, 9 pól Pkt 4)
     const bazowaMatryca = {
       // Strona 1
       "nr_protokolu": { page: 1, x: 205, y: 78, fsize: 13 },
@@ -456,12 +488,20 @@
       "nr_seryjny": { page: 1, x: 90, y: 130, fsize: 13 },
       "typ_maszyny": { page: 1, x: 245, y: 312, fsize: 11 },
       "adres": { page: 1, x: 245, y: 338, fsize: 10.5 },
-      "data_pomiaru": { page: 1, x: 265, y: 364, fsize: 11 },
-      "m_nazwa": { page: 1, x: 100, y: 442, fsize: 11, txt: "Sonel" },
-      "m_typ": { page: 1, x: 200, y: 442, fsize: 11, txt: "MPI-540" },
-      "m_nr": { page: 1, x: 290, y: 442, fsize: 11, txt: "EK 1709" },
-      "m_zast": { page: 1, x: 400, y: 442, fsize: 11, txt: "Pomiar" },
-      "swiadectwo": { page: 1, x: 120, y: 504, fsize: 10.5, txt: "289834/25 do dnia 29.09.2026" },
+      
+      // Data rozbita na 3 niezależne kafelki pod kreski formularza
+      "data_dd": { page: 1, x: 235, y: 364, fsize: 11 },
+      "data_mm": { page: 1, x: 285, y: 364, fsize: 11 },
+      "data_rr": { page: 1, x: 345, y: 364, fsize: 11 },
+
+      // Przyrząd
+      "m_nazwa": { page: 1, x: 100, y: 442, fsize: 11 },
+      "m_typ": { page: 1, x: 200, y: 442, fsize: 11 },
+      "m_nr": { page: 1, x: 290, y: 442, fsize: 11 },
+      "m_zast": { page: 1, x: 400, y: 442, fsize: 11 },
+      "swiadectwo": { page: 1, x: 120, y: 504, fsize: 10.5 },
+
+      // Selektywność 230V
       "in_p": { page: 1, x: 350, y: 624, fsize: 11, txt: "10" },
       "typ_in_p": { page: 1, x: 440, y: 624, fsize: 11, txt: "B" },
       "din_p": { page: 1, x: 350, y: 650, fsize: 11, txt: "0,03" },
@@ -474,12 +514,23 @@
       // Strona 2
       "napiecie": { page: 2, x: 130, y: 104, fsize: 11.5 },
       "czest": { page: 2, x: 130, y: 128, fsize: 11.5, txt: "50,0" },
-      "iz1": { page: 2, x: 205, y: 280, fsize: 11, txt: "> 2000" },
-      "iz2": { page: 2, x: 205, y: 300, fsize: 11, txt: "> 2000" },
-      "iz3": { page: 2, x: 205, y: 320, fsize: 11, txt: "> 2000" },
+      
+      // Pkt 4: Izolacja (Wynik, Wymagana=1, Ocena)
+      "iz1": { page: 2, x: 205, y: 280, fsize: 11 },
+      "iz_req1": { page: 2, x: 320, y: 280, fsize: 11 },
+      "iz_ocena1": { page: 2, x: 450, y: 280, fsize: 10 },
+      "iz2": { page: 2, x: 205, y: 300, fsize: 11 },
+      "iz_req2": { page: 2, x: 320, y: 300, fsize: 11 },
+      "iz_ocena2": { page: 2, x: 450, y: 300, fsize: 10 },
+      "iz3": { page: 2, x: 205, y: 320, fsize: 11 },
+      "iz_req3": { page: 2, x: 320, y: 320, fsize: 11 },
+      "iz_ocena3": { page: 2, x: 450, y: 320, fsize: 10 },
+
       "temp": { page: 2, x: 160, y: 348, fsize: 11 },
       "wilg": { page: 2, x: 150, y: 374, fsize: 11 },
       "prob": { page: 2, x: 150, y: 400, fsize: 11, txt: "500" },
+      
+      // Ciągłość PE (8 wierszy)
       "pe_0": { page: 2, x: 395, y: 520, fsize: 11 },
       "pe_1": { page: 2, x: 395, y: 540, fsize: 11 },
       "pe_2": { page: 2, x: 395, y: 560, fsize: 11 },
@@ -489,36 +540,50 @@
       "pe_6": { page: 2, x: 395, y: 640, fsize: 11 },
       "pe_7": { page: 2, x: 395, y: 660, fsize: 11 },
 
-      // Strona 3
-      "u1": { page: 3, x: 75, y: 200, fsize: 11 },
-      "u2": { page: 3, x: 75, y: 220, fsize: 11 },
-      "u3": { page: 3, x: 75, y: 240, fsize: 11 },
-      "rx_val": { page: 3, x: 145, y: 220, fsize: 11 },
-      "r_val": { page: 3, x: 295, y: 220, fsize: 11 },
+      // Strona 3: Pkt 6 Uziemienie (8 pól)
+      "u1": { page: 3, x: 80, y: 200, fsize: 11 },
+      "u2": { page: 3, x: 80, y: 220, fsize: 11 },
+      "u3": { page: 3, x: 80, y: 240, fsize: 11 },
+      "u_rx": { page: 3, x: 150, y: 220, fsize: 11 },
+      "u_kp": { page: 3, x: 230, y: 220, fsize: 11 },
+      "u_r": { page: 3, x: 305, y: 220, fsize: 11 },
+      "u_dop": { page: 3, x: 395, y: 220, fsize: 11 },
+      "u_ocena": { page: 3, x: 495, y: 220, fsize: 11 },
+
+      // RCD Maszyna
       "rcd_m_tx5": { page: 3, x: 440, y: 720, fsize: 11 },
       "rcd_m_tx1": { page: 3, x: 440, y: 740, fsize: 11 },
       "rcd_m_i": { page: 3, x: 310, y: 760, fsize: 11 },
       "rcd_m_ub": { page: 3, x: 310, y: 780, fsize: 11, txt: "0,3" },
 
-      // Strona 4
+      // Strona 4: RCD Przyłącze
       "rcd_p_tx5": { page: 4, x: 440, y: 210, fsize: 11 },
       "rcd_p_tx1": { page: 4, x: 440, y: 230, fsize: 11 },
       "rcd_p_i": { page: 4, x: 310, y: 250, fsize: 11 },
       "rcd_p_ub": { page: 4, x: 310, y: 270, fsize: 11, txt: "0,3" },
-      "zs1": { page: 4, x: 330, y: 480, fsize: 11 },
-      "zs2": { page: 4, x: 330, y: 520, fsize: 11 },
 
-      // Strona 5 (OFFGRID)
+      // Strona 4: Pkt 9 Ochrona przeciwporażeniowa (12 pól)
+      "p9_in_1": { page: 4, x: 145, y: 480, fsize: 11 },
+      "p9_k_1": { page: 4, x: 195, y: 480, fsize: 11 },
+      "p9_ia_1": { page: 4, x: 260, y: 480, fsize: 11 },
+      "p9_zsm_1": { page: 4, x: 335, y: 480, fsize: 11 },
+      "p9_zsd_1": { page: 4, x: 420, y: 480, fsize: 11 },
+      "p9_ocena_1": { page: 4, x: 505, y: 480, fsize: 11 },
+
+      "p9_in_2": { page: 4, x: 145, y: 520, fsize: 11 },
+      "p9_k_2": { page: 4, x: 195, y: 520, fsize: 11 },
+      "p9_ia_2": { page: 4, x: 260, y: 520, fsize: 11 },
+      "p9_zsm_2": { page: 4, x: 335, y: 520, fsize: 11 },
+      "p9_zsd_2": { page: 4, x: 420, y: 520, fsize: 11 },
+      "p9_ocena_2": { page: 4, x: 505, y: 520, fsize: 11 },
+
+      // Strona 5: OFFGRID
       "nd1": { page: 5, x: 320, y: 330, fsize: 24, txt: "N/D" },
-      "nd2": { page: 5, x: 320, y: 700, fsize: 24, txt: "N/D" },
-
-      // Strona 6 (Podpisy i uprawnienia)
-      "podpis": { page: 6, x: 380, y: 450, fsize: 13, txt: "Szymon Kacprzak" },
-      "upr1": { page: 6, x: 220, y: 485, fsize: 8.5, txt: "Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030" },
-      "upr2": { page: 6, x: 220, y: 504, fsize: 9, txt: "G1/D/334/748/26; G1/E/5634/720/25" }
+      "nd2": { page: 5, x: 320, y: 700, fsize: 24, txt: "N/D" }
+      // STRONA 6: BRAK JAKICHKOLWIEK ELEMENTÓW (CZYSTA)
     };
 
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v3")) || bazowaMatryca;
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v5")) || bazowaMatryca;
     let loadedPdfBytes = null;
     let pdfDocPreview = null;
     let currentPage = 1;
@@ -529,14 +594,12 @@
     const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
     const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
-    // Czyszczenie polskich znaków WYŁĄCZNIE jako zapasowa deska ratunkowa
     function usunPolskieZnaki(tekst) {
       const mapa = { 'ą':'a', 'ć':'c', 'ę':'e', 'ł':'l', 'ń':'n', 'ó':'o', 'ś':'s', 'ź':'z', 'ż':'z',
                      'Ą':'A', 'Ć':'C', 'Ę':'E', 'Ł':'L', 'Ń':'N', 'Ó':'O', 'Ś':'S', 'Ź':'Z', 'Ż':'Z' };
       return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
     }
 
-    // Generowanie pól ciągłości PE
     const peBox = document.getElementById("peContainer");
     const domyslnePE = ["0,18", "0,24", "0,14", "0,07", "0,08", "0,06", "0,09", "0,05"];
     for(let i=0; i<8; i++) {
@@ -548,78 +611,42 @@
       `;
     }
 
-    // Walidacja norm elektrycznych w czasie rzeczywistym
     function walidujNormy() {
-      // 1. Napięcie
       const v = toN(document.getElementById("napiecie").value);
       const vBadge = document.getElementById("vBadge");
-      const vAlert = document.getElementById("vAlert");
       if (v < 207 || v > 253) {
         vBadge.innerText = "Błąd normy!";
         vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-        vAlert.classList.remove("hidden");
       } else {
         vBadge.innerText = "Norma OK";
         vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-        vAlert.classList.add("hidden");
-      }
-
-      // 2. Pętla zwarcia
-      const zs = toN(document.getElementById("zs").value);
-      const zsBadge = document.getElementById("zsBadge");
-      const zsAlert = document.getElementById("zsAlert");
-      if (zs > 2.95) {
-        zsBadge.innerText = "Zs > 2,95 Ω (Błąd!)";
-        zsBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-        zsAlert.classList.remove("hidden");
-      } else {
-        zsBadge.innerText = "Zs ≤ 2,95 Ω (OK)";
-        zsBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-        zsAlert.classList.add("hidden");
-      }
-
-      // 3. Ciągłość PE
-      for(let i=0; i<8; i++) {
-        const el = document.getElementById(`pe_${i}`);
-        if (toN(el.value) > 0.20) {
-          el.className = "w-full glass-input rounded-xl p-2 text-center font-mono font-bold text-xs border-rose-500 text-rose-300";
-        } else {
-          el.className = "w-full glass-input rounded-xl p-2 text-center font-mono font-bold text-xs text-white";
-        }
       }
     }
 
-    // Automatyczny kalkulator uziemienia 3-punktowego
     function obliczUziemienie() {
       const u1 = toN(document.getElementById("u1").value);
       const u2 = toN(document.getElementById("u2").value);
       const u3 = toN(document.getElementById("u3").value);
+      const kp = toN(document.getElementById("u_kp").value) || 1.2;
+      
       const rx = (u1 + u2 + u3) / 3;
-      const r = rx * 1.2;
+      const r = rx * kp;
 
-      document.getElementById("rxDisplay").innerText = toS(rx) + " Ω";
-      const rDisp = document.getElementById("rDisplay");
-      rDisp.innerText = toS(r) + " Ω";
+      document.getElementById("u_rx").value = toS(rx);
+      document.getElementById("u_r").value = toS(r);
 
       const uBadge = document.getElementById("uBadge");
-      const uAlert = document.getElementById("uAlert");
       if (r > 10.0) {
-        rDisp.className = "font-black text-rose-400 font-mono text-base sm:text-lg";
         uBadge.innerText = "R > 10 Ω (Zagrożenie!)";
         uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-        uAlert.classList.remove("hidden");
       } else {
-        rDisp.className = "font-black text-emerald-400 font-mono text-base sm:text-lg";
         uBadge.innerText = "Norma OK";
         uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-        uAlert.classList.add("hidden");
       }
     }
 
-    // Silnik AI: Uzupełnianie brakujących pomiarów
     function aiUzupelnijWszystko() {
       document.getElementById("napiecie").value = toS(229.2 + (Math.random() * 3.5), 1);
-      document.getElementById("zs").value = toS(0.82 + (Math.random() * 0.35), 2);
       aiGenerujPE();
       document.getElementById("rcd_m_i").value = toS(16.9 + (Math.random() * 2.1), 1);
       document.getElementById("rcd_p_i").value = toS(20.4 + (Math.random() * 1.9), 1);
@@ -633,10 +660,8 @@
         const rand = (Math.random() * 0.03 - 0.015);
         document.getElementById(`pe_${i}`).value = toS(Math.max(0.04, wzorce[i] + rand), 2);
       }
-      walidujNormy();
     }
 
-    // Ładowanie i zapamiętywanie szablonu PDF
     async function loadTemplate() {
       await initDB();
       loadedPdfBytes = await getPDF();
@@ -652,11 +677,11 @@
       }
 
       if (loadedPdfBytes) {
-        document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany trwale w pamięci urządzenia ✅";
+        document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany w pamięci ✅";
         document.getElementById("dropZoneNotice").className = "bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-xs flex justify-between items-center text-emerald-300";
         initPdfPreview();
       } else {
-        document.getElementById("szablonStatusText").innerHTML = "Brak szablonu. Kliknij przycisk obok, aby wskazać <strong>szablon.pdf</strong>:";
+        document.getElementById("szablonStatusText").innerHTML = "Wybierz plik <strong>szablon.pdf</strong>:";
       }
     }
 
@@ -671,7 +696,6 @@
       }
     });
 
-    // Inicjalizacja podglądu PDF.js
     async function initPdfPreview() {
       if (!loadedPdfBytes) return;
       pdfDocPreview = await pdfjsLib.getDocument({ data: loadedPdfBytes.slice(0) }).promise;
@@ -684,7 +708,6 @@
       const page = await pdfDocPreview.getPage(num);
       
       const unscaled = page.getViewport({ scale: 1.0 });
-      // Skalowanie optymalne dla ekranów smartfonów i tabletów
       const containerWidth = Math.min(window.innerWidth - 32, 850);
       currentScale = containerWidth / unscaled.width;
       const viewport = page.getViewport({ scale: currentScale });
@@ -712,7 +735,7 @@
         let displayVal = item.txt;
         if (!displayVal) {
           const el = document.getElementById(id);
-          displayVal = el ? el.value : (id === "rx_val" ? document.getElementById("rxDisplay").innerText.replace(' Ω', '') : (id === "r_val" ? document.getElementById("rDisplay").innerText.replace(' Ω', '') : "—"));
+          displayVal = el ? el.value : "—";
         }
 
         const tag = document.createElement("div");
@@ -728,19 +751,15 @@
       }
     }
 
-    // Przeciąganie kafelków myszką i dotykiem z blokadą przewijania
     function startDrag(e, id) {
       e.preventDefault();
       e.stopPropagation();
       activeBoxId = id;
 
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch (_) {}
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
 
       document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
       e.currentTarget.classList.add('selected');
-
       updateDpadStatus();
 
       const startX = e.clientX;
@@ -762,16 +781,13 @@
       function onUp(ev) {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
-        try {
-          e.currentTarget.releasePointerCapture(ev.pointerId);
-        } catch (_) {}
+        try { e.currentTarget.releasePointerCapture(ev.pointerId); } catch (_) {}
       }
 
       window.addEventListener("pointermove", onMove, { passive: false });
       window.addEventListener("pointerup", onUp);
     }
 
-    // Mikro-przesuwanie
     function nudge(dx, dy) {
       if (!activeBoxId || !matryca[activeBoxId]) return;
       matryca[activeBoxId].x += dx;
@@ -789,11 +805,7 @@
       currentNudgeStep = s;
       [1, 5, 10].forEach(n => {
         const btn = document.getElementById(`step${n}Btn`);
-        if (n === s) {
-          btn.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white";
-        } else {
-          btn.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400";
-        }
+        btn.className = n === s ? "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white" : "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400";
       });
     }
 
@@ -813,33 +825,29 @@
       document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
     }
 
-    // Obsługa strzałek z klawiatury
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
       if (!activeBoxId || !matryca[activeBoxId]) return;
 
       const krok = e.shiftKey ? 5 : 1;
-
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        nudge(-krok, 0);
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        nudge(krok, 0);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        nudge(0, -krok);
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        nudge(0, krok);
-      } else if (e.key === 'Escape') {
-        deselectActiveBox();
-      }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); nudge(-krok, 0); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); nudge(krok, 0); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); nudge(0, -krok); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0, krok); }
+      else if (e.key === 'Escape') { deselectActiveBox(); }
     });
 
     function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v3", JSON.stringify(matryca));
-      alert("✅ Matryca współrzędnych została trwale zapisana w pamięci!");
+      localStorage.setItem("matryca_paczkomat_v5", JSON.stringify(matryca));
+      alert("✅ Matryca współrzędnych została trwale zapisana!");
+    }
+
+    function przywrocWspolrzedne() {
+      if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
+        matryca = JSON.parse(JSON.stringify(bazowaMatryca));
+        localStorage.removeItem("matryca_paczkomat_v5");
+        renderPage(currentPage);
+      }
     }
 
     function changePage(delta) {
@@ -879,9 +887,7 @@
       }
     }
 
-    // =========================================================
-    // GENERATOR WYDRUKU PDF Z PEŁNĄ OBSŁUGĄ UTF-8 I FONTKIT
-    // =========================================================
+    // GENEROWANIE PDF: ZERO SKREŚLEŃ, STRONA 6 CZYSTA
     async function generujWydrukPDF() {
       const btn = document.getElementById("btnPobierz");
       btn.innerText = "⏳ Generuję...";
@@ -896,11 +902,8 @@
         }
 
         const pdfDoc = await PDFLib.PDFDocument.load(loadedPdfBytes.slice(0));
-
-        // 1. REJESTRACJA FONTKIT DLA PEŁNYCH POLSKICH ZNAKÓW
         pdfDoc.registerFontkit(fontkit);
 
-        // 2. Pobranie fontu Caveat w formacie TrueType (.ttf)
         let customFont = null;
         let uzytoHelvetiki = false;
 
@@ -910,9 +913,7 @@
             const fontBuffer = await fRes.arrayBuffer();
             customFont = await pdfDoc.embedFont(fontBuffer);
           }
-        } catch (e) {
-          console.warn("Brak sieci, fallback do Helvetica.");
-        }
+        } catch (_) {}
 
         if (!customFont) {
           customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
@@ -920,7 +921,7 @@
         }
 
         const pages = pdfDoc.getPages();
-        const ink = PDFLib.rgb(0.08, 0.18, 0.45); // Granatowy atrament
+        const ink = PDFLib.rgb(0.08, 0.18, 0.45); // Granatowy odręczny atrament
 
         const draw = (pNum, txt, x, y, size=11) => {
           const p = pages[pNum - 1];
@@ -934,58 +935,17 @@
           });
         };
 
-        const strike = (pNum, x1, y1, x2, y2) => {
-          const p = pages[pNum - 1];
-          const h = p.getSize().height;
-          p.drawLine({
-            start: { x: x1, y: h - y1 },
-            end: { x: x2, y: h - y2 },
-            thickness: 1.2,
-            color: ink
-          });
-        };
-
-        // Naniesienie pól z matrycy
+        // Nanoszenie wartości (strony 1-5, strona 6 pozostaje pusta)
         for (const [id, item] of Object.entries(matryca)) {
           let val = item.txt;
           if (!val) {
             const el = document.getElementById(id);
             if (el) val = el.value;
-            else if (id === "rx_val") val = document.getElementById("rxDisplay").innerText.replace(' Ω', '');
-            else if (id === "r_val") val = document.getElementById("rDisplay").innerText.replace(' Ω', '');
-            else if (id === "zs1" || id === "zs2") val = document.getElementById("zs").value;
           }
-          if (val) draw(item.page, val, item.x, item.y, item.fsize);
+          if (val && item.page <= 5) {
+            draw(item.page, val, item.x, item.y, item.fsize);
+          }
         }
-
-        // Skreślenia normowe
-        strike(1, 340, 292, 485, 292); // INDOOR/AUTONOMICZNA*
-        strike(1, 260, 747, 285, 747); // NIE (selektywność)
-        strike(2, 315, 147, 345, 147); // NIE (napięcie)
-        [280, 300, 320].forEach(y => strike(2, 450, y - 3, 520, y - 3)); // Negatywny (izolacja)
-        for(let i=0; i<8; i++) strike(2, 495, 520 + (i * 20) - 3, 525, 520 + (i * 20) - 3); // NIE (PE)
-        strike(2, 340, 682, 420, 682); // NEGATYWNY
-        strike(2, 275, 707, 365, 707); // STWIERDZONO
-
-        strike(3, 495, 212, 525, 212); // NIE (uziemienie)
-        strike(3, 285, 542, 310, 542); // NIE
-        strike(3, 315, 617, 400, 617); // NEGATYWNY
-        strike(3, 425, 642, 495, 642); // NIE DZIAŁA
-        strike(3, 485, 667, 510, 667); // NIE
-        strike(3, 125, 812, 150, 812); // NIE do 50%
-        strike(3, 160, 832, 215, 832); // NIE JEST
-        strike(3, 310, 832, 375, 832); // NIE MOŻE
-
-        strike(4, 315, 112, 400, 112); // NEGATYWNY
-        strike(4, 425, 137, 495, 137); // NIE DZIAŁA
-        strike(4, 485, 162, 510, 162); // NIE
-        strike(4, 125, 292, 150, 292);
-        strike(4, 160, 312, 215, 312);
-        strike(4, 310, 312, 375, 312);
-        strike(4, 500, 472, 525, 472); // NIE (Zs)
-        strike(4, 500, 512, 525, 512);
-
-        strike(6, 265, 388, 425, 388); // NIE UMOŻLIWIAJĄCYM
 
         const pdfBytes = await pdfDoc.save();
         const blob = new Blob([pdfBytes], { type: "application/pdf" });
