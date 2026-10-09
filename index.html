@@ -62,13 +62,18 @@
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     }
+    .drag-box.strike-box {
+      border: 1.5px dashed rgba(239, 68, 68, 0.8) !important;
+      background: rgba(254, 226, 226, 0.85) !important;
+      color: #991b1b !important;
+      text-decoration: line-through;
+      font-weight: 800;
+    }
     .drag-box:active { cursor: grabbing; }
     .drag-box.selected {
       border: 2px solid #ef4444 !important;
-      background: rgba(254, 242, 242, 0.98) !important;
-      color: #b91c1c !important;
-      z-index: 50;
       box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35) !important;
+      z-index: 50;
     }
   </style>
 </head>
@@ -95,7 +100,7 @@
         📋 Dane & AI
       </button>
       <button onclick="switchTab('editor')" id="tabBtnEditor" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-white">
-        🎯 Ruchomy PDF
+        🎯 Ruchomy PDF & Skreślenia
       </button>
       <button onclick="otworzHistorie()" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-amber-400 flex items-center gap-1">
         📚 Historia (<span id="historiaCount">0</span>)
@@ -129,7 +134,7 @@
         <input type="file" id="ocrInput" accept="image/*" class="hidden">
       </label>
       <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-[11px]">
-        Szablon PDF
+        Wgraj Szablon PDF
         <input type="file" id="fileUpload" accept="application/pdf" class="hidden">
       </label>
     </div>
@@ -177,11 +182,11 @@
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny (z tabliczki)</label>
             <input type="text" id="nr_seryjny" value="25/CQU121000159" class="w-full glass-input rounded-xl px-3 py-2 text-amber-300 font-mono font-extrabold tracking-wider">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny (z tabliczki)</label>
             <input type="text" id="typ_maszyny" value="QR NFM 8.4 A0000 W5VYY" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono">
           </div>
           <div>
@@ -418,7 +423,7 @@
           <button onclick="wyczyscPodpis()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Zmień podpis</button>
         </div>
         <p class="text-[11px] text-slate-400 mb-2">
-          Podpisz się poniżej tylko <strong>raz</strong>. Przeglądarka zapamięta Twój podpis na stałe i wstawi go do każdego kolejnego protokołu:
+          Podpisz się poniżej tylko <strong>raz</strong>. Przeglądarka zapamięta Twój podpis na stałe i wstawi go do każdego protokołu:
         </p>
         <div class="bg-white rounded-xl overflow-hidden border-2 border-indigo-500/40 shadow-inner">
           <canvas id="sigCanvas" class="w-full h-28 block touch-none cursor-crosshair bg-white"></canvas>
@@ -426,7 +431,7 @@
       </div>
     </div>
 
-    <!-- WIDOK 2: RUCHOMY PDF -->
+    <!-- WIDOK 2: RUCHOMY PDF & SKREŚLENIA -->
     <div id="viewEditor" class="hidden space-y-3">
       <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
         <div class="flex items-center gap-2">
@@ -435,7 +440,7 @@
           <button onclick="changePage(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">▶</button>
         </div>
         <div class="flex items-center gap-2">
-          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek myszką lub dotykiem</span>
+          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek lub czerwone skreślenie myszką</span>
           <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
             🔄 Resetuj
           </button>
@@ -504,7 +509,6 @@
     </div>
   </div>
 
-  <!-- Połączenie z plikiem app.js -->
   <script src="app.js"></script>
 </body>
 </html>
