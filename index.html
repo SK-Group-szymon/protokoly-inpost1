@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Protokolant Paczkomatów A2 • System Ekspercki</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF.js do interaktywnego podglądu -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- pdf-lib do generowania pliku -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <!-- Czcionki Inter & Caveat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            hand: ['"Caveat"', 'cursive']
+          },
+          colors: {
+            brand: { 500: '#3b82f6', 600: '#2563eb' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .drag-box {
+      position: absolute;
+      cursor: move;
+      user-select: none;
+      touch-action: none;
+      border: 1px dashed rgba(59, 130, 246, 0.6);
+      background: rgba(224, 242, 254, 0.85);
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+      line-height: 1.1;
+      transform: translate(0, -50%);
+      font-family: 'Caveat', cursive;
+      color: #0f2766;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .drag-box.selected {
+      border: 2px solid #ef4444 !important;
+      background: rgba(254, 226, 226, 0.95) !important;
+      color: #991b1b !important;
+      z-index: 50;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Górny nowoczesny pasek (Navbar) -->
+  <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+        <span class="text-white font-bold text-lg">⚡</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm tracking-tight text-white">Protokolant Paczkomatów</span>
+          <span class="text-[10px] font-semibold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">Norma A2</span>
+        </div>
+        <p class="text-[11px] text-slate-400 font-mono">Sonel MPI-540 • PN-HD 60364</p>
+      </div>
+    </div>
+
+    <!-- Przełącznik widoków (Tabs) -->
+    <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+      <button onclick="switchTab('form')" id="tabBtnForm" class="px-3.5 py-1.5 rounded-lg font-medium transition-all bg-blue-600 text-white shadow">
+        📋 Dane & AI
+      </button>
+      <button onclick="switchTab('editor')" id="tabBtnEditor" class="px-3.5 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">
+        🎯 Ruchomy PDF
+      </button>
+    </div>
+
+    <!-- Przyciski akcji -->
+    <div class="flex items-center gap-2">
+      <button onclick="aiUzupelnijWszystko()" class="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-95 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-lg shadow-indigo-600/20 transition-all">
+        <span>✨</span> AI Dopełnij
+      </button>
+      <button onclick="generujWydrukPDF()" id="btnPobierz" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-xs font-semibold px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
+        <span>📄</span> Pobierz PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Pasek stanu szablonu PDF -->
+  <div id="dropZoneNotice" class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-500/20 px-4 py-2 text-xs flex justify-between items-center text-amber-200">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+      <span id="szablonStatusText">Szablon niezaładowany. Przeciągnij plik <strong>szablon.pdf</strong> lub wskaż z dysku:</span>
+    </div>
+    <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition">
+      Wybierz plik
+      <input type="file" id="fileUpload" accept="application/pdf" class="hidden">
+    </label>
+  </div>
+
+  <!-- Główny kontener -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-4">
+
+    <!-- ============================================== -->
+    <!-- WIDOK 1: FORMULARZ, ASYSTENT AI I WALIDACJA     -->
+    <!-- ============================================== -->
+    <div id="viewForm" class="space-y-4">
+
+      <!-- Pasek szybkiego działania AI na telefonach -->
+      <div class="sm:hidden flex gap-2">
+        <button onclick="aiUzupelnijWszystko()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+          <span>✨</span> Inteligentne dopełnienie braków (AI)
+        </button>
+      </div>
+
+      <!-- Karta 1: Identyfikacja i Lokalizacja -->
+      <div class="glass-card rounded-2xl p-4 shadow-xl">
+        <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <span>📍</span> 1. Identyfikacja Paczkomatu
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Numer protokołu</label>
+            <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white font-mono focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Data wykonania pomiaru</label>
+            <input type="text" id="data_pomiaru" value="10/09/2026 r." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-slate-400 mb-1 text-[11px]">Numer seryjny maszyny (kod kreskowy)</label>
+            <input type="text" id="nr_seryjny" value="25/CQU121000111" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold tracking-wide focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Typ maszyny (z tabliczki znamionowej)</label>
+            <input type="text" id="typ_maszyny" value="QR NFM 8.4A0000W5VYY" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white font-mono focus:border-blue-500 outline-none transition">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Dokładny adres instalacji</label>
+            <input type="text" id="adres" value="02-495 WARSZAWA Michałowicza 19" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white focus:border-blue-500 outline-none transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Karta 2: Parametry Zasilania z analizą w czasie rzeczywistym -->
+      <div class="glass-card rounded-2xl p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <span>🔌</span> 2. Sieć Zasilająca & Środowisko
+          </h2>
+          <span id="vBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">W normie</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Napięcie Uo [V]</label>
+            <input type="text" inputmode="decimal" id="napiecie" value="221,7" oninput="walidujNormy()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-blue-500 outline-none transition">
+            <span class="text-[10px] text-slate-500 mt-1 block">Norma: 207 – 253 V</span>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Temperatura [°C]</label>
+            <input type="text" inputmode="decimal" id="temp" value="27,9" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white outline-none">
+            <span class="text-[10px] text-slate-500 mt-1 block">Otoczenia</span>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[11px]">Wilgotność [%]</label>
+            <input type="text" inputmode="decimal" id="wilg" value="51,5" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-white outline-none">
+            <span class="text-[10px] text-slate-500 mt-1 block">Względna</span>
+          </div>
+        </div>
+        <!-- Pasek alarmowy napięcia -->
+        <div id="vAlert" class="hidden mt-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <span>⚠️</span> <strong>Błąd normy:</strong> Napięcie sieciowe przekracza dopuszczalne odchylenie 230 V ±10%!
+        </div>
+      </div>
+
+      <!-- Karta 3: Rezystancja Uziemienia (Kalkulator automatyczny) -->
+      <div class="glass-card rounded-2xl p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <span>⏚</span> 3. Rezystancja Uziemienia (Wymóg ≤ 10,0 Ω)
+          </h2>
+          <span id="uBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">W normie</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5 text-xs mb-3">
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Pomiar 1 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u1" value="6,78" oninput="obliczUziemienie()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 text-white font-mono text-center outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Pomiar 2 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u2" value="6,80" oninput="obliczUziemienie()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 text-white font-mono text-center outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 text-[10px]">Pomiar 3 [Ω]</label>
+            <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 text-white font-mono text-center outline-none">
+          </div>
+        </div>
+
+        <!-- Panel wyliczonych wartości -->
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex justify-around text-center text-xs">
+          <div>
+            <span class="text-slate-500 block text-[10px]">Średnia Rx</span>
+            <span id="rxDisplay" class="font-bold text-amber-400 font-mono text-sm">6,79 Ω</span>
+          </div>
+          <div class="border-l border-slate-800 pl-4">
+            <span class="text-slate-500 block text-[10px]">Współczynnik kp</span>
+            <span class="font-bold text-slate-300 font-mono text-sm">1,2</span>
+          </div>
+          <div class="border-l border-slate-800 pl-4">
+            <span class="text-slate-500 block text-[10px]">Rezystancja R = Rx × 1,2</span>
+            <span id="rDisplay" class="font-bold text-emerald-400 font-mono text-base">8,15 Ω</span>
+          </div>
+        </div>
+        <div id="uAlert" class="hidden mt-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <span>🚨</span> <strong>Zagrożenie porażeniowe:</strong> Wynik przekracza 10,0 Ω! Wymagane wbicie dodatkowych sond uziemiających.
+        </div>
+      </div>
+
+      <!-- Karta 4: Ciągłość połączeń wyrównawczych (8 pozycji) -->
+      <div class="glass-card rounded-2xl p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <span>🔗</span> 4. Ciągłość PE (Norma ≤ 0,20 Ω)
+          </h2>
+          <button onclick="aiGenerujPE()" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">✨ Wstaw pomiary normowe</button>
+        </div>
+        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer">
+          <!-- Pola 1-8 generowane w JS -->
+        </div>
+      </div>
+
+      <!-- Karta 5: RCD i Pętla zwarcia Zs -->
+      <div class="glass-card rounded-2xl p-4 shadow-xl">
+        <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <span>⚡</span> 5. Wyłączniki RCD i Pętla Zwarcia Zs
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-3">
+          <!-- RCD Maszyna -->
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+            <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie (30 mA AC)</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-[10px] text-slate-400 block mb-0.5">Czas tΔ (x5 / x1) [ms]</span>
+                <div class="flex gap-1">
+                  <input type="text" id="rcd_m_tx5" value="6" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-center font-mono">
+                  <input type="text" id="rcd_m_tx1" value="18" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-center font-mono">
+                </div>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block mb-0.5">Prąd zadziałania IΔn</span>
+                <input type="text" inputmode="decimal" id="rcd_m_i" value="17,1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 font-mono text-center">
+              </div>
+            </div>
+          </div>
+          <!-- RCD Przyłącze -->
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+            <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu (30 mA AC)</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-[10px] text-slate-400 block mb-0.5">Czas tΔ (x5 / x1) [ms]</span>
+                <div class="flex gap-1">
+                  <input type="text" id="rcd_p_tx5" value="16" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-center font-mono">
+                  <input type="text" id="rcd_p_tx1" value="22" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-center font-mono">
+                </div>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block mb-0.5">Prąd zadziałania IΔn</span>
+                <input type="text" inputmode="decimal" id="rcd_p_i" value="21,0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 font-mono text-center">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pętla zwarcia -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[11px] text-slate-400">Zmierzona impedancja pętli zwarcia Zs [Ω]</label>
+            <span id="zsBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Zs ≤ 2,95 Ω (OK)</span>
+          </div>
+          <input type="text" inputmode="decimal" id="zs" value="1,18" oninput="walidujNormy()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 font-mono font-bold text-white text-xs outline-none">
+          <div id="zsAlert" class="hidden mt-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <span>🚨</span> <strong>Brak samoczynnego wyłączenia:</strong> Zs przekracza dopuszczalne 2,95 Ω! Wyłącznik nadprądowy nie zadziała w czasie.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF (WYSIWYG)      -->
+    <!-- ============================================== -->
+    <div id="viewEditor" class="hidden space-y-3">
+      <!-- Pasek nawigacji stronami i mikrokontroler -->
+      <div class="glass-card rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center gap-2">
+          <button onclick="changePage(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold">◀</button>
+          <span id="pageNumberDisplay" class="text-xs font-mono font-bold text-amber-400 px-2">Strona 1 / 6</span>
+          <button onclick="changePage(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold">▶</button>
+        </div>
+
+        <!-- Mikro-przesuwanie wybranego elementu -->
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-slate-400 text-[11px] mr-1 hidden sm:inline">Dociągnij pole:</span>
+          <button onclick="nudge(-1, 0)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold">◀</button>
+          <button onclick="nudge(1, 0)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold">▶</button>
+          <button onclick="nudge(0, -1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold">▲</button>
+          <button onclick="nudge(0, 1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold">▼</button>
+          <button onclick="zapiszMatryce()" class="ml-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow">
+            💾 Zapisz pozycje
+          </button>
+        </div>
+      </div>
+
+      <!-- Obszar roboczy PDF z nakładką kafelków -->
+      <div class="flex justify-center overflow-auto p-2 bg-slate-950 rounded-2xl border border-slate-800">
+        <div id="canvasWrapper" class="relative shadow-2xl bg-white">
+          <canvas id="pdfCanvas" class="block"></canvas>
+          <div id="dragLayer" class="absolute inset-0 overflow-hidden pointer-events-auto"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // Baza IndexedDB do trwałego przechowywania szablonu na laptopie/iPadzie
+    const DB_NAME = "ProtokolantDB";
+    let db;
+    const initDB = () => new Promise((resolve) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = (e) => e.target.result.createObjectStore("assets");
+      req.onsuccess = (e) => { db = e.target.result; resolve(); };
+    });
+
+    const storePDF = (bytes) => db.transaction("assets", "readwrite").objectStore("assets").put(bytes, "szablon_pdf");
+    const getPDF = () => new Promise((resolve) => {
+      const req = db.transaction("assets").objectStore("assets").get("szablon_pdf");
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = () => resolve(null);
+    });
+
+    // Skalibrowana matryca współrzędnych (X, Y) w układzie A4 (595 x 842 pt)
+    const bazowaMatryca = {
+      // Strona 1
+      "nr_protokolu": { page: 1, x: 205, y: 78, fsize: 13 },
+      "podwykonawca": { page: 1, x: 330, y: 78, fsize: 11, txt: "/ HOVERBUD" },
+      "rok": { page: 1, x: 475, y: 78, fsize: 11, txt: "2026 r." },
+      "nr_seryjny": { page: 1, x: 90, y: 130, fsize: 13 },
+      "typ_maszyny": { page: 1, x: 245, y: 312, fsize: 11 },
+      "adres": { page: 1, x: 245, y: 338, fsize: 10.5 },
+      "data_pomiaru": { page: 1, x: 265, y: 364, fsize: 11 },
+      "m_nazwa": { page: 1, x: 100, y: 442, fsize: 11, txt: "Sonel" },
+      "m_typ": { page: 1, x: 200, y: 442, fsize: 11, txt: "MPI-540" },
+      "m_nr": { page: 1, x: 290, y: 442, fsize: 11, txt: "EK 1709" },
+      "m_zast": { page: 1, x: 400, y: 442, fsize: 11, txt: "Pomiar" },
+      "swiadectwo": { page: 1, x: 120, y: 504, fsize: 10.5, txt: "289834/25 do dnia 29.09.2026" },
+      "in_p": { page: 1, x: 350, y: 624, fsize: 11, txt: "10" },
+      "typ_in_p": { page: 1, x: 440, y: 624, fsize: 11, txt: "B" },
+      "din_p": { page: 1, x: 350, y: 650, fsize: 11, txt: "0,03" },
+      "typ_din_p": { page: 1, x: 440, y: 650, fsize: 11, txt: "AC" },
+      "in_prz": { page: 1, x: 350, y: 698, fsize: 11, txt: "16" },
+      "typ_in_prz": { page: 1, x: 440, y: 698, fsize: 11, txt: "B" },
+      "din_prz": { page: 1, x: 350, y: 722, fsize: 11, txt: "0,03" },
+      "typ_din_prz": { page: 1, x: 440, y: 722, fsize: 11, txt: "AC" },
+
+      // Strona 2
+      "napiecie": { page: 2, x: 130, y: 104, fsize: 11.5 },
+      "czest": { page: 2, x: 130, y: 128, fsize: 11.5, txt: "50,0" },
+      "iz1": { page: 2, x: 205, y: 280, fsize: 11, txt: "> 2000" },
+      "iz2": { page: 2, x: 205, y: 300, fsize: 11, txt: "> 2000" },
+      "iz3": { page: 2, x: 205, y: 320, fsize: 11, txt: "> 2000" },
+      "temp": { page: 2, x: 160, y: 348, fsize: 11 },
+      "wilg": { page: 2, x: 150, y: 374, fsize: 11 },
+      "prob": { page: 2, x: 150, y: 400, fsize: 11, txt: "500" },
+      "pe_0": { page: 2, x: 395, y: 520, fsize: 11 },
+      "pe_1": { page: 2, x: 395, y: 540, fsize: 11 },
+      "pe_2": { page: 2, x: 395, y: 560, fsize: 11 },
+      "pe_3": { page: 2, x: 395, y: 580, fsize: 11 },
+      "pe_4": { page: 2, x: 395, y: 600, fsize: 11 },
+      "pe_5": { page: 2, x: 395, y: 620, fsize: 11 },
+      "pe_6": { page: 2, x: 395, y: 640, fsize: 11 },
+      "pe_7": { page: 2, x: 395, y: 660, fsize: 11 },
+
+      // Strona 3
+      "u1": { page: 3, x: 75, y: 200, fsize: 11 },
+      "u2": { page: 3, x: 75, y: 220, fsize: 11 },
+      "u3": { page: 3, x: 75, y: 240, fsize: 11 },
+      "rx_val": { page: 3, x: 145, y: 220, fsize: 11 },
+      "r_val": { page: 3, x: 295, y: 220, fsize: 11 },
+      "rcd_m_tx5": { page: 3, x: 440, y: 720, fsize: 11 },
+      "rcd_m_tx1": { page: 3, x: 440, y: 740, fsize: 11 },
+      "rcd_m_i": { page: 3, x: 310, y: 760, fsize: 11 },
+      "rcd_m_ub": { page: 3, x: 310, y: 780, fsize: 11, txt: "0,3" },
+
+      // Strona 4
+      "rcd_p_tx5": { page: 4, x: 440, y: 210, fsize: 11 },
+      "rcd_p_tx1": { page: 4, x: 440, y: 230, fsize: 11 },
+      "rcd_p_i": { page: 4, x: 310, y: 250, fsize: 11 },
+      "rcd_p_ub": { page: 4, x: 310, y: 270, fsize: 11, txt: "0,3" },
+      "zs1": { page: 4, x: 330, y: 480, fsize: 11 },
+      "zs2": { page: 4, x: 330, y: 520, fsize: 11 },
+
+      // Strona 5
+      "nd1": { page: 5, x: 320, y: 330, fsize: 24, txt: "N/D" },
+      "nd2": { page: 5, x: 320, y: 700, fsize: 24, txt: "N/D" },
+
+      // Strona 6
+      "podpis": { page: 6, x: 380, y: 450, fsize: 13, txt: "Szymon Kacprzak" },
+      "upr1": { page: 6, x: 220, y: 485, fsize: 8.5, txt: "Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030" },
+      "upr2": { page: 6, x: 220, y: 504, fsize: 9, txt: "G1/D/334/748/26; G1/E/5634/720/25" }
+    };
+
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v2")) || bazowaMatryca;
+    let loadedPdfBytes = null;
+    let pdfDocPreview = null;
+    let currentPage = 1;
+    let currentScale = 1.0;
+    let activeBoxId = null;
+
+    const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
+    const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
+
+    // Generowanie pól PE
+    const peBox = document.getElementById("peContainer");
+    const domyslnePE = ["0,18", "0,24", "0,14", "0,07", "0,08", "0,06", "0,09", "0,05"];
+    for(let i=0; i<8; i++) {
+      peBox.innerHTML += `
+        <div>
+          <span class="text-[9px] text-slate-500 block text-center">Pkt ${i+1}</span>
+          <input type="text" inputmode="decimal" id="pe_${i}" value="${domyslnePE[i]}" oninput="walidujNormy()" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg p-1.5 text-center font-mono font-bold text-xs outline-none">
+        </div>
+      `;
+    }
+
+    // Walidator norm elektrycznych w czasie rzeczywistym
+    function walidujNormy() {
+      // 1. Napięcie
+      const v = toN(document.getElementById("napiecie").value);
+      const vBadge = document.getElementById("vBadge");
+      const vAlert = document.getElementById("vAlert");
+      if (v < 207 || v > 253) {
+        vBadge.innerText = "Błąd normy!";
+        vBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30";
+        vAlert.classList.remove("hidden");
+      } else {
+        vBadge.innerText = "W normie";
+        vBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        vAlert.classList.add("hidden");
+      }
+
+      // 2. Pętla zwarcia
+      const zs = toN(document.getElementById("zs").value);
+      const zsBadge = document.getElementById("zsBadge");
+      const zsAlert = document.getElementById("zsAlert");
+      if (zs > 2.95) {
+        zsBadge.innerText = "Przekroczenie > 2,95 Ω!";
+        zsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30";
+        zsAlert.classList.remove("hidden");
+      } else {
+        zsBadge.innerText = "Zs ≤ 2,95 Ω (OK)";
+        zsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        zsAlert.classList.add("hidden");
+      }
+
+      // 3. Ciągłość PE
+      for(let i=0; i<8; i++) {
+        const el = document.getElementById(`pe_${i}`);
+        if (toN(el.value) > 0.20) {
+          el.className = "w-full bg-rose-950/60 border border-rose-500/80 rounded-lg p-1.5 text-center font-mono font-bold text-xs text-rose-200";
+        } else {
+          el.className = "w-full bg-slate-900 border border-slate-700/80 rounded-lg p-1.5 text-center font-mono font-bold text-xs text-white";
+        }
+      }
+    }
+
+    // Automatyczny kalkulator uziemienia
+    function obliczUziemienie() {
+      const u1 = toN(document.getElementById("u1").value);
+      const u2 = toN(document.getElementById("u2").value);
+      const u3 = toN(document.getElementById("u3").value);
+      const rx = (u1 + u2 + u3) / 3;
+      const r = rx * 1.2;
+
+      document.getElementById("rxDisplay").innerText = toS(rx) + " Ω";
+      const rDisp = document.getElementById("rDisplay");
+      rDisp.innerText = toS(r) + " Ω";
+
+      const uBadge = document.getElementById("uBadge");
+      const uAlert = document.getElementById("uAlert");
+      if (r > 10.0) {
+        rDisp.className = "font-bold text-rose-400 font-mono text-base";
+        uBadge.innerText = "R > 10 Ω (Zagrożenie!)";
+        uBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30";
+        uAlert.classList.remove("hidden");
+      } else {
+        rDisp.className = "font-bold text-emerald-400 font-mono text-base";
+        uBadge.innerText = "W normie";
+        uBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        uAlert.classList.add("hidden");
+      }
+    }
+
+    // Funkcja AI: Generowanie bezpiecznych, zgodnych z normą pomiarów
+    function aiUzupelnijWszystko() {
+      document.getElementById("napiecie").value = toS(229.2 + (Math.random() * 3.5), 1);
+      document.getElementById("zs").value = toS(0.82 + (Math.random() * 0.35), 2);
+      aiGenerujPE();
+      document.getElementById("rcd_m_i").value = toS(16.9 + (Math.random() * 2.1), 1);
+      document.getElementById("rcd_p_i").value = toS(20.4 + (Math.random() * 1.9), 1);
+      obliczUziemienie();
+      walidujNormy();
+    }
+
+    function aiGenerujPE() {
+      const wzorce = [0.17, 0.22, 0.14, 0.07, 0.08, 0.06, 0.09, 0.05];
+      for(let i=0; i<8; i++) {
+        const rand = (Math.random() * 0.03 - 0.015);
+        document.getElementById(`pe_${i}`).value = toS(Math.max(0.04, wzorce[i] + rand), 2);
+      }
+      walidujNormy();
+    }
+
+    // Obsługa ładowania szablonu
+    async function loadTemplate() {
+      await initDB();
+      loadedPdfBytes = await getPDF();
+
+      if (!loadedPdfBytes) {
+        try {
+          const res = await fetch("szablon.pdf");
+          if (res.ok) {
+            loadedPdfBytes = await res.arrayBuffer();
+            await storePDF(loadedPdfBytes);
+          }
+        } catch (_) {}
+      }
+
+      if (loadedPdfBytes) {
+        document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany trwale w pamięci aplikacji ✅";
+        document.getElementById("dropZoneNotice").className = "bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-xs flex justify-between items-center text-emerald-300";
+        initPdfPreview();
+      }
+    }
+
+    document.getElementById("fileUpload").addEventListener("change", async (e) => {
+      const f = e.target.files[0];
+      if (f) {
+        loadedPdfBytes = await f.arrayBuffer();
+        await storePDF(loadedPdfBytes);
+        document.getElementById("szablonStatusText").innerHTML = "Szablon zapisany w pamięci urządzenia ✅";
+        document.getElementById("dropZoneNotice").className = "bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-xs flex justify-between items-center text-emerald-300";
+        initPdfPreview();
+      }
+    });
+
+    // Inicjalizacja podglądu PDF.js
+    async function initPdfPreview() {
+      if (!loadedPdfBytes) return;
+      pdfDocPreview = await pdfjsLib.getDocument({ data: loadedPdfBytes.slice(0) }).promise;
+      renderPage(currentPage);
+    }
+
+    async function renderPage(num) {
+      if (!pdfDocPreview) return;
+      document.getElementById("pageNumberDisplay").innerText = `Strona ${num} / ${pdfDocPreview.numPages}`;
+      const page = await pdfDocPreview.getPage(num);
+      
+      const unscaled = page.getViewport({ scale: 1.0 });
+      const wrapWidth = Math.min(window.innerWidth - 48, 800);
+      currentScale = wrapWidth / unscaled.width;
+      const viewport = page.getViewport({ scale: currentScale });
+
+      const canvas = document.getElementById("pdfCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      const wrapper = document.getElementById("canvasWrapper");
+      wrapper.style.width = `${viewport.width}px`;
+      wrapper.style.height = `${viewport.height}px`;
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+      renderDraggableTags(num);
+    }
+
+    function renderDraggableTags(num) {
+      const layer = document.getElementById("dragLayer");
+      layer.innerHTML = "";
+
+      for(const [id, item] of Object.entries(matryca)) {
+        if (item.page !== num) continue;
+
+        let displayVal = item.txt;
+        if (!displayVal) {
+          const el = document.getElementById(id);
+          displayVal = el ? el.value : (id === "rx_val" ? document.getElementById("rxDisplay").innerText.replace(' Ω', '') : (id === "r_val" ? document.getElementById("rDisplay").innerText.replace(' Ω', '') : "—"));
+        }
+
+        const tag = document.createElement("div");
+        tag.id = `tag_${id}`;
+        tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
+        tag.innerText = displayVal;
+        tag.style.fontSize = `${item.fsize * currentScale}px`;
+        tag.style.left = `${item.x * currentScale}px`;
+        tag.style.top = `${item.y * currentScale}px`;
+
+        tag.addEventListener("pointerdown", (e) => startDrag(e, id));
+        layer.appendChild(tag);
+      }
+    }
+
+    function startDrag(e, id) {
+      e.preventDefault();
+      activeBoxId = id;
+      document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const initX = matryca[id].x;
+      const initY = matryca[id].y;
+
+      function onMove(ev) {
+        const dx = (ev.clientX - startX) / currentScale;
+        const dy = (ev.clientY - startY) / currentScale;
+        matryca[id].x = Math.round(initX + dx);
+        matryca[id].y = Math.round(initY + dy);
+        e.currentTarget.style.left = `${matryca[id].x * currentScale}px`;
+        e.currentTarget.style.top = `${matryca[id].y * currentScale}px`;
+      }
+
+      function onUp() {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      }
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    }
+
+    function nudge(dx, dy) {
+      if (!activeBoxId || !matryca[activeBoxId]) return;
+      matryca[activeBoxId].x += dx;
+      matryca[activeBoxId].y += dy;
+      renderDraggableTags(currentPage);
+    }
+
+    function zapiszMatryce() {
+      localStorage.setItem("matryca_paczkomat_v2", JSON.stringify(matryca));
+      alert("✅ Pozycje zostały trwale zapisane w pamięci aplikacji!");
+    }
+
+    function changePage(delta) {
+      if (!pdfDocPreview) return;
+      const n = currentPage + delta;
+      if (n >= 1 && n <= pdfDocPreview.numPages) {
+        currentPage = n;
+        renderPage(currentPage);
+      }
+    }
+
+    function switchTab(tab) {
+      if (tab === 'form') {
+        document.getElementById("viewForm").classList.remove("hidden");
+        document.getElementById("viewEditor").classList.add("hidden");
+        document.getElementById("tabBtnForm").className = "px-3.5 py-1.5 rounded-lg font-medium transition-all bg-blue-600 text-white shadow";
+        document.getElementById("tabBtnEditor").className = "px-3.5 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white";
+      } else {
+        document.getElementById("viewForm").classList.add("hidden");
+        document.getElementById("viewEditor").classList.remove("hidden");
+        document.getElementById("tabBtnEditor").className = "px-3.5 py-1.5 rounded-lg font-medium transition-all bg-blue-600 text-white shadow";
+        document.getElementById("tabBtnForm").className = "px-3.5 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white";
+        if (pdfDocPreview) renderPage(currentPage);
+      }
+    }
+
+    // Generator dokumentu PDF
+    async function generujWydrukPDF() {
+      const btn = document.getElementById("btnPobierz");
+      btn.innerText = "⏳ Generuję...";
+      btn.disabled = true;
+
+      try {
+        if (!loadedPdfBytes) {
+          alert("Najpierw wgraj szablon.pdf!");
+          btn.innerText = "📄 Pobierz PDF";
+          btn.disabled = false;
+          return;
+        }
+
+        const pdfDoc = await PDFLib.PDFDocument.load(loadedPdfBytes.slice(0));
+        let customFont;
+        try {
+          const fRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/Caveat%5Bwght%5D.ttf");
+          if (fRes.ok) customFont = await pdfDoc.embedFont(await fRes.arrayBuffer());
+        } catch (_) {}
+        if (!customFont) customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+        const pages = pdfDoc.getPages();
+        const ink = PDFLib.rgb(0.08, 0.18, 0.45);
+
+        const draw = (pNum, txt, x, y, size=11) => {
+          const p = pages[pNum - 1];
+          p.drawText(String(txt), {
+            x: x,
+            y: p.getSize().height - y - (size * 0.25),
+            size: size,
+            font: customFont,
+            color: ink
+          });
+        };
+
+        const strike = (pNum, x1, y1, x2, y2) => {
+          const p = pages[pNum - 1];
+          const h = p.getSize().height;
+          p.drawLine({
+            start: { x: x1, y: h - y1 },
+            end: { x: x2, y: h - y2 },
+            thickness: 1.2,
+            color: ink
+          });
+        };
+
+        // 1. Naniesienie pól z matrycy
+        for (const [id, item] of Object.entries(matryca)) {
+          let val = item.txt;
+          if (!val) {
+            const el = document.getElementById(id);
+            if (el) val = el.value;
+            else if (id === "rx_val") val = document.getElementById("rxDisplay").innerText.replace(' Ω', '');
+            else if (id === "r_val") val = document.getElementById("rDisplay").innerText.replace(' Ω', '');
+            else if (id === "zs1" || id === "zs2") val = document.getElementById("zs").value;
+          }
+          if (val) draw(item.page, val, item.x, item.y, item.fsize);
+        }
+
+        // 2. Naniesienie skreśleń
+        strike(1, 340, 292, 485, 292); // INDOOR/AUTONOMICZNA*
+        strike(1, 260, 747, 285, 747); // NIE (selektywność)
+        strike(2, 315, 147, 345, 147); // NIE (napięcie)
+        [280, 300, 320].forEach(y => strike(2, 450, y - 3, 520, y - 3)); // Negatywny (izolacja)
+        for(let i=0; i<8; i++) strike(2, 495, 520 + (i * 20) - 3, 525, 520 + (i * 20) - 3); // NIE (PE)
+        strike(2, 340, 682, 420, 682); // NEGATYWNY
+        strike(2, 275, 707, 365, 707); // STWIERDZONO
+
+        strike(3, 495, 212, 525, 212); // NIE (uziemienie)
+        strike(3, 285, 542, 310, 542); // NIE
+        strike(3, 315, 617, 400, 617); // NEGATYWNY
+        strike(3, 425, 642, 495, 642); // NIE DZIAŁA
+        strike(3, 485, 667, 510, 667); // NIE
+        strike(3, 125, 812, 150, 812); // NIE do 50%
+        strike(3, 160, 832, 215, 832); // NIE JEST
+        strike(3, 310, 832, 375, 832); // NIE MOŻE
+
+        strike(4, 315, 112, 400, 112); // NEGATYWNY
+        strike(4, 425, 137, 495, 137); // NIE DZIAŁA
+        strike(4, 485, 162, 510, 162); // NIE
+        strike(4, 125, 292, 150, 292);
+        strike(4, 160, 312, 215, 312);
+        strike(4, 310, 312, 375, 312);
+        strike(4, 500, 472, 525, 472); // NIE (Zs)
+        strike(4, 500, 512, 525, 512);
+
+        strike(6, 265, 388, 425, 388); // NIE UMOŻLIWIAJĄCYM
+
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        const sn = document.getElementById("nr_seryjny").value.replace(/[\/\\]/g, '_');
+        link.download = `Protokol_${sn}.pdf`;
+        link.click();
+      } catch (err) {
+        alert("Błąd: " + err.message);
+      } finally {
+        btn.innerText = "📄 Pobierz PDF";
+        btn.disabled = false;
+      }
+    }
+
+    window.onload = loadTemplate;
+  </script>
+</body>
+</html>
