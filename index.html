@@ -85,7 +85,7 @@
           <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-mono">Edytor Pomiarów</p>
+        <p class="text-[11px] text-slate-400 font-mono">Kalibracja Zapisana • MPI-540</p>
       </div>
     </div>
 
@@ -145,7 +145,7 @@
             <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono font-bold">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Data badania (3 osobne okienka: DD / MM / RRRR)</label>
+            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Data badania (DD / MM / RRRR)</label>
             <div class="grid grid-cols-3 gap-1.5">
               <input type="text" id="data_dd" value="10" placeholder="DD" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
               <input type="text" id="data_mm" value="09" placeholder="MM" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
@@ -220,7 +220,7 @@
         </div>
       </div>
 
-      <!-- 4. Rezystancja Izolacji (Wynik i Wartość wymagana = 1, BEZ ocen) -->
+      <!-- 4. Rezystancja Izolacji -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Przewód Zasilający)
@@ -259,7 +259,7 @@
         <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
       </div>
 
-      <!-- 6. Uziemienie 6.1 (Pomiary bez oceny) -->
+      <!-- 6. Uziemienie 6.1 -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
@@ -346,7 +346,7 @@
         </div>
       </div>
 
-      <!-- 9. Badanie ochrony przeciwporażeniowej (Wartości bez ocen) -->
+      <!-- 9. Badanie ochrony przeciwporażeniowej -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej
@@ -455,7 +455,7 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const DB_NAME = "ProtokolantDB_A2_v7";
+    const DB_NAME = "ProtokolantDB_A2_skalibrowana";
     let db;
     const initDB = () => new Promise((resolve) => {
       const req = indexedDB.open(DB_NAME, 1);
@@ -470,99 +470,79 @@
       req.onerror = () => resolve(null);
     });
 
-    // Pełna matryca współrzędnych
+    // TWOJA ZAPISANA MATRYCA SKALIBROWANYCH WSPÓŁRZĘDNYCH
     const bazowaMatryca = {
-      // Strona 1
-      "nr_protokolu": { page: 1, x: 205, y: 78, fsize: 13 },
-      "podwykonawca": { page: 1, x: 330, y: 78, fsize: 11, txt: "HOVERBUD" },
-      "rok": { page: 1, x: 475, y: 78, fsize: 11, txt: "2026 r." },
-      "nr_seryjny": { page: 1, x: 90, y: 130, fsize: 13 },
-      "typ_maszyny": { page: 1, x: 245, y: 312, fsize: 11 },
-      "adres": { page: 1, x: 245, y: 338, fsize: 10.5 },
-      
-      "data_dd": { page: 1, x: 235, y: 364, fsize: 11 },
-      "data_mm": { page: 1, x: 285, y: 364, fsize: 11 },
-      "data_rr": { page: 1, x: 345, y: 364, fsize: 11 },
-
-      "m_nazwa": { page: 1, x: 100, y: 442, fsize: 11 },
-      "m_typ": { page: 1, x: 200, y: 442, fsize: 11 },
-      "m_nr": { page: 1, x: 290, y: 442, fsize: 11 },
-      "m_zast": { page: 1, x: 400, y: 442, fsize: 11 },
-      "swiadectwo": { page: 1, x: 120, y: 504, fsize: 10.5 },
-
-      "in_p": { page: 1, x: 350, y: 624, fsize: 11, txt: "10" },
-      "typ_in_p": { page: 1, x: 440, y: 624, fsize: 11, txt: "B" },
-      "din_p": { page: 1, x: 350, y: 650, fsize: 11, txt: "0,03" },
-      "typ_din_p": { page: 1, x: 440, y: 650, fsize: 11, txt: "AC" },
-      "in_prz": { page: 1, x: 350, y: 698, fsize: 11, txt: "16" },
-      "typ_in_prz": { page: 1, x: 440, y: 698, fsize: 11, txt: "B" },
-      "din_prz": { page: 1, x: 350, y: 722, fsize: 11, txt: "0,03" },
-      "typ_din_prz": { page: 1, x: 440, y: 722, fsize: 11, txt: "AC" },
-
-      // Strona 2
-      "napiecie": { page: 2, x: 130, y: 104, fsize: 11.5 },
-      "czest": { page: 2, x: 130, y: 128, fsize: 11.5, txt: "50,0" },
-      
-      "iz1": { page: 2, x: 205, y: 280, fsize: 11 },
-      "iz_req1": { page: 2, x: 320, y: 280, fsize: 11 },
-      "iz2": { page: 2, x: 205, y: 300, fsize: 11 },
-      "iz_req2": { page: 2, x: 320, y: 300, fsize: 11 },
-      "iz3": { page: 2, x: 205, y: 320, fsize: 11 },
-      "iz_req3": { page: 2, x: 320, y: 320, fsize: 11 },
-
-      "temp": { page: 2, x: 160, y: 348, fsize: 11 },
-      "wilg": { page: 2, x: 150, y: 374, fsize: 11 },
-      "prob": { page: 2, x: 150, y: 400, fsize: 11, txt: "500" },
-      
-      "pe_0": { page: 2, x: 395, y: 520, fsize: 11 },
-      "pe_1": { page: 2, x: 395, y: 540, fsize: 11 },
-      "pe_2": { page: 2, x: 395, y: 560, fsize: 11 },
-      "pe_3": { page: 2, x: 395, y: 580, fsize: 11 },
-      "pe_4": { page: 2, x: 395, y: 600, fsize: 11 },
-      "pe_5": { page: 2, x: 395, y: 620, fsize: 11 },
-      "pe_6": { page: 2, x: 395, y: 640, fsize: 11 },
-      "pe_7": { page: 2, x: 395, y: 660, fsize: 11 },
-
-      // Strona 3: Pkt 6 Uziemienie
-      "u1": { page: 3, x: 80, y: 200, fsize: 11 },
-      "u2": { page: 3, x: 80, y: 220, fsize: 11 },
-      "u3": { page: 3, x: 80, y: 240, fsize: 11 },
-      "u_rx": { page: 3, x: 150, y: 220, fsize: 11 },
-      "u_kp": { page: 3, x: 230, y: 220, fsize: 11 },
-      "u_r": { page: 3, x: 305, y: 220, fsize: 11 },
-      "u_dop": { page: 3, x: 395, y: 220, fsize: 11 },
-
-      // RCD Maszyna
-      "rcd_m_tx5": { page: 3, x: 440, y: 720, fsize: 11 },
-      "rcd_m_tx1": { page: 3, x: 440, y: 740, fsize: 11 },
-      "rcd_m_i": { page: 3, x: 310, y: 760, fsize: 11 },
-      "rcd_m_ub": { page: 3, x: 310, y: 780, fsize: 11, txt: "0,3" },
-
-      // Strona 4: RCD Przyłącze
-      "rcd_p_tx5": { page: 4, x: 440, y: 210, fsize: 11 },
-      "rcd_p_tx1": { page: 4, x: 440, y: 230, fsize: 11 },
-      "rcd_p_i": { page: 4, x: 310, y: 250, fsize: 11 },
-      "rcd_p_ub": { page: 4, x: 310, y: 270, fsize: 11, txt: "0,3" },
-
-      // Strona 4: Pkt 9 Ochrona przeciwporażeniowa
-      "p9_in_1": { page: 4, x: 145, y: 480, fsize: 11 },
-      "p9_k_1": { page: 4, x: 195, y: 480, fsize: 11 },
-      "p9_ia_1": { page: 4, x: 260, y: 480, fsize: 11 },
-      "p9_zsm_1": { page: 4, x: 335, y: 480, fsize: 11 },
-      "p9_zsd_1": { page: 4, x: 420, y: 480, fsize: 11 },
-
-      "p9_in_2": { page: 4, x: 145, y: 520, fsize: 11 },
-      "p9_k_2": { page: 4, x: 195, y: 520, fsize: 11 },
-      "p9_ia_2": { page: 4, x: 260, y: 520, fsize: 11 },
-      "p9_zsm_2": { page: 4, x: 335, y: 520, fsize: 11 },
-      "p9_zsd_2": { page: 4, x: 420, y: 520, fsize: 11 },
-
-      // Strona 5: OFFGRID
-      "nd1": { page: 5, x: 320, y: 330, fsize: 24, txt: "N/D" },
-      "nd2": { page: 5, x: 320, y: 700, fsize: 24, txt: "N/D" }
+      "nr_protokolu": {"page":1,"x":205,"y":78,"fsize":13},
+      "podwykonawca": {"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
+      "rok": {"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
+      "nr_seryjny": {"page":1,"x":93,"y":127,"fsize":13},
+      "typ_maszyny": {"page":1,"x":286,"y":313,"fsize":11},
+      "adres": {"page":1,"x":303,"y":337,"fsize":10.5},
+      "data_dd": {"page":1,"x":302,"y":359,"fsize":11},
+      "data_mm": {"page":1,"x":348,"y":361,"fsize":11},
+      "data_rr": {"page":1,"x":402,"y":361,"fsize":11},
+      "m_nazwa": {"page":1,"x":101,"y":429,"fsize":11},
+      "m_typ": {"page":1,"x":234,"y":430,"fsize":11},
+      "m_nr": {"page":1,"x":346,"y":427,"fsize":11},
+      "m_zast": {"page":1,"x":455,"y":430,"fsize":11},
+      "swiadectwo": {"page":1,"x":120,"y":504,"fsize":10.5},
+      "in_p": {"page":1,"x":315,"y":610,"fsize":11,"txt":"10"},
+      "typ_in_p": {"page":1,"x":371,"y":607,"fsize":11,"txt":"B"},
+      "din_p": {"page":1,"x":311,"y":638,"fsize":11,"txt":"0,03"},
+      "typ_din_p": {"page":1,"x":372,"y":639,"fsize":11,"txt":"AC"},
+      "in_prz": {"page":1,"x":307,"y":687,"fsize":11,"txt":"16"},
+      "typ_in_prz": {"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
+      "din_prz": {"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
+      "typ_din_prz": {"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
+      "napiecie": {"page":2,"x":158,"y":100,"fsize":11.5},
+      "czest": {"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
+      "iz1": {"page":2,"x":222,"y":287,"fsize":11},
+      "iz_req1": {"page":2,"x":333,"y":286,"fsize":11},
+      "iz2": {"page":2,"x":222,"y":304,"fsize":11},
+      "iz_req2": {"page":2,"x":333,"y":302,"fsize":11},
+      "iz3": {"page":2,"x":220,"y":320,"fsize":11},
+      "iz_req3": {"page":2,"x":330,"y":318,"fsize":11},
+      "temp": {"page":2,"x":220,"y":345,"fsize":11},
+      "wilg": {"page":2,"x":211,"y":370,"fsize":11},
+      "prob": {"page":2,"x":209,"y":396,"fsize":11,"txt":"500"},
+      "pe_0": {"page":2,"x":405,"y":505,"fsize":11},
+      "pe_1": {"page":2,"x":406,"y":534,"fsize":11},
+      "pe_2": {"page":2,"x":406,"y":555,"fsize":11},
+      "pe_3": {"page":2,"x":402,"y":572,"fsize":11},
+      "pe_4": {"page":2,"x":402,"y":590,"fsize":11},
+      "pe_5": {"page":2,"x":406,"y":608,"fsize":11},
+      "pe_6": {"page":2,"x":405,"y":625,"fsize":11},
+      "pe_7": {"page":2,"x":404,"y":641,"fsize":11},
+      "u1": {"page":3,"x":111,"y":197,"fsize":11},
+      "u2": {"page":3,"x":112,"y":216,"fsize":11},
+      "u3": {"page":3,"x":114,"y":232,"fsize":11},
+      "u_rx": {"page":3,"x":185,"y":215,"fsize":11},
+      "u_kp": {"page":3,"x":263,"y":214,"fsize":11},
+      "u_r": {"page":3,"x":331,"y":217,"fsize":11},
+      "u_dop": {"page":3,"x":411,"y":217,"fsize":11},
+      "rcd_m_tx5": {"page":3,"x":384,"y":660,"fsize":11},
+      "rcd_m_tx1": {"page":3,"x":385,"y":679,"fsize":11},
+      "rcd_m_i": {"page":3,"x":274,"y":693,"fsize":11},
+      "rcd_m_ub": {"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
+      "rcd_p_tx5": {"page":4,"x":381,"y":195,"fsize":11},
+      "rcd_p_tx1": {"page":4,"x":383,"y":213,"fsize":11},
+      "rcd_p_i": {"page":4,"x":276,"y":227,"fsize":11},
+      "rcd_p_ub": {"page":4,"x":266,"y":245,"fsize":11,"txt":"0,3"},
+      "p9_in_1": {"page":4,"x":145,"y":480,"fsize":11},
+      "p9_k_1": {"page":4,"x":195,"y":480,"fsize":11},
+      "p9_ia_1": {"page":4,"x":260,"y":480,"fsize":11},
+      "p9_zsm_1": {"page":4,"x":367,"y":474,"fsize":11},
+      "p9_zsd_1": {"page":4,"x":420,"y":480,"fsize":11},
+      "p9_in_2": {"page":4,"x":145,"y":520,"fsize":11},
+      "p9_k_2": {"page":4,"x":195,"y":520,"fsize":11},
+      "p9_ia_2": {"page":4,"x":260,"y":520,"fsize":11},
+      "p9_zsm_2": {"page":4,"x":365,"y":522,"fsize":11},
+      "p9_zsd_2": {"page":4,"x":420,"y":520,"fsize":11},
+      "nd1": {"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
+      "nd2": {"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"}
     };
 
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v7")) || bazowaMatryca;
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_skalibrowana")) || bazowaMatryca;
     let loadedPdfBytes = null;
     let pdfDocPreview = null;
     let currentPage = 1;
@@ -725,13 +705,11 @@
         tag.style.left = `${item.x * currentScale}px`;
         tag.style.top = `${item.y * currentScale}px`;
 
-        // Hybrydowa obsługa: kliknięcie wybiera kafelek, przeciąganie płynnie przesuwa go po arkuszu
         tag.addEventListener("pointerdown", (e) => startDrag(e, id));
         layer.appendChild(tag);
       }
     }
 
-    // Bezpośrednie płynne przeciąganie kursorem / palcem (Drag & Drop)
     function startDrag(e, id) {
       e.preventDefault();
       e.stopPropagation();
@@ -769,7 +747,6 @@
       window.addEventListener("pointercancel", onPointerUp);
     }
 
-    // Mikro-przesuwanie przyciskami D-Pada / strzałkami
     function nudge(dx, dy) {
       if (!activeBoxId || !matryca[activeBoxId]) return;
       matryca[activeBoxId].x += dx;
@@ -807,7 +784,6 @@
       document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
     }
 
-    // Obsługa strzałek z klawiatury
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
       if (!activeBoxId || !matryca[activeBoxId]) return;
@@ -821,14 +797,14 @@
     });
 
     function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v7", JSON.stringify(matryca));
+      localStorage.setItem("matryca_paczkomat_skalibrowana", JSON.stringify(matryca));
       alert("✅ Matryca współrzędnych została trwale zapisana!");
     }
 
     function przywrocWspolrzedne() {
       if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
         matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-        localStorage.removeItem("matryca_paczkomat_v7");
+        localStorage.removeItem("matryca_paczkomat_skalibrowana");
         renderPage(currentPage);
       }
     }
@@ -904,7 +880,7 @@
         }
 
         const pages = pdfDoc.getPages();
-        const ink = PDFLib.rgb(0.08, 0.18, 0.45); // Granatowy odręczny atrament
+        const ink = PDFLib.rgb(0.08, 0.18, 0.45);
 
         const draw = (pNum, txt, x, y, size=11) => {
           const p = pages[pNum - 1];
@@ -918,7 +894,7 @@
           });
         };
 
-        // Nanoszenie wartości (strony 1-5, strona 6 pozostaje pusta)
+        // Nanoszenie wartości (strony 1-5, strona 6 pozostaje czysta)
         for (const [id, item] of Object.entries(matryca)) {
           let val = item.txt;
           if (!val) {
