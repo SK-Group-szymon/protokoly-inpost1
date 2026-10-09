@@ -30,7 +30,7 @@
 
   <style>
     .glass-panel {
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.82);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -49,8 +49,8 @@
       cursor: grab;
       user-select: none;
       touch-action: none;
-      border: 1.5px dashed rgba(99, 102, 241, 0.7);
-      background: rgba(238, 242, 255, 0.92);
+      border: 1.5px dashed rgba(99, 102, 241, 0.75);
+      background: rgba(238, 242, 255, 0.94);
       border-radius: 4px;
       padding: 1px 6px;
       white-space: nowrap;
@@ -220,34 +220,30 @@
         </div>
       </div>
 
-      <!-- 4. Rezystancja Izolacji (z polem Wartość dopuszczalna = 1) -->
+      <!-- 4. Rezystancja Izolacji (Wynik i Wartość wymagana = 1, BEZ ocen) -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Przewód Zasilający)
         </h2>
         <div class="space-y-2 text-xs">
-          <div class="grid grid-cols-3 gap-2 font-bold text-slate-400 text-[10px] text-center px-1">
+          <div class="grid grid-cols-2 gap-3 font-bold text-slate-400 text-[10px] text-center px-1">
             <span>Wynik pomiaru [MΩ]</span>
             <span>Wymagana wartość M[Ω]</span>
-            <span>Ocena</span>
           </div>
           <!-- L-N -->
-          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
             <input type="text" id="iz1" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
             <input type="text" id="iz_req1" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-            <input type="text" id="iz_ocena1" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
           <!-- L-PE -->
-          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
             <input type="text" id="iz2" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
             <input type="text" id="iz_req2" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-            <input type="text" id="iz_ocena2" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
           <!-- N-PE -->
-          <div class="grid grid-cols-3 gap-2 items-center bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
             <input type="text" id="iz3" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
             <input type="text" id="iz_req3" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-            <input type="text" id="iz_ocena3" value="Pozytywny" class="glass-input rounded-lg p-1.5 text-center font-semibold text-emerald-400">
           </div>
         </div>
       </div>
@@ -263,11 +259,11 @@
         <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
       </div>
 
-      <!-- 6. Uziemienie 6.1 (Kompletne 8 pól) -->
+      <!-- 6. Uziemienie 6.1 (Pomiary bez oceny) -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>⏚</span> 6. Rezystancja Uziemienia (Pkt 6.1 - Wszystkie Pola)
+            <span>⏚</span> 6. Rezystancja Uziemienia (Pkt 6.1)
           </h2>
           <span id="uBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
         </div>
@@ -287,7 +283,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
           <div>
             <label class="block text-slate-400 mb-1 text-[10px] text-center">Średnia Rx [Ω]</label>
             <input type="text" id="u_rx" value="6,79" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-amber-300">
@@ -304,10 +300,6 @@
             <label class="block text-slate-400 mb-1 text-[10px] text-center">Dopuszczalna [Ω]</label>
             <input type="text" id="u_dop" value="10" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-white">
           </div>
-          <div class="col-span-2 sm:col-span-1">
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Ocena</label>
-            <input type="text" id="u_ocena" value="TAK" class="w-full glass-input rounded-xl p-1.5 text-center font-bold text-emerald-400">
-          </div>
         </div>
       </div>
 
@@ -317,6 +309,7 @@
           <span>⚡</span> 7 i 8. Parametry Wyłączników RCD (30 mA AC)
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+          <!-- RCD w maszynie -->
           <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie</span>
             <div class="grid grid-cols-2 gap-2">
@@ -333,6 +326,7 @@
               </div>
             </div>
           </div>
+          <!-- RCD w przyłączu -->
           <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu</span>
             <div class="grid grid-cols-2 gap-2">
@@ -352,44 +346,41 @@
         </div>
       </div>
 
-      <!-- 9. Badanie ochrony przeciwporażeniowej (Kompletne 12 pól tabeli) -->
+      <!-- 9. Badanie ochrony przeciwporażeniowej (Wartości bez ocen) -->
       <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
         <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej (Wszystkie Pola Tabeli)
+          <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej
         </h2>
         <div class="space-y-3 text-xs">
-          <div class="hidden sm:grid grid-cols-6 gap-2 text-center text-[10px] font-bold text-slate-400 px-1">
+          <div class="hidden sm:grid grid-cols-5 gap-2 text-center text-[10px] font-bold text-slate-400 px-1">
             <span>Prąd In [A]</span>
             <span>Współcz. k</span>
             <span>Prąd Ia [A]</span>
             <span>Zs zmierzona [Ω]</span>
             <span>Zs dopuszczalna [Ω]</span>
-            <span>Skuteczność</span>
           </div>
 
           <!-- Wiersz 1: Paczkomat -->
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Główne zabezpieczenie paczkomatu</span>
-            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <input type="text" id="p9_in_1" value="10" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_k_1" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_ia_1" value="50" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_zsm_1" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
               <input type="text" id="p9_zsd_1" value="4,72" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
-              <input type="text" id="p9_ocena_1" value="TAK" placeholder="Ocena" class="glass-input rounded-xl p-2 text-center font-bold text-emerald-400">
             </div>
           </div>
 
           <!-- Wiersz 2: Przyłącze -->
           <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
             <span class="text-[11px] font-bold text-indigo-300 block">Zabezpieczenie w przyłączu</span>
-            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <input type="text" id="p9_in_2" value="16" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_k_2" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_ia_2" value="80" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
               <input type="text" id="p9_zsm_2" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
               <input type="text" id="p9_zsd_2" value="2,95" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
-              <input type="text" id="p9_ocena_2" value="TAK" placeholder="Ocena" class="glass-input rounded-xl p-2 text-center font-bold text-emerald-400">
             </div>
           </div>
         </div>
@@ -399,7 +390,7 @@
     <!-- ============================================== -->
     <!-- WIDOK 2: RUCHOMY KALIBRATOR PDF (WYSIWYG)      -->
     <!-- ============================================== -->
-    <div id="viewEditor" class="hidden space-y-3 animate-fade-in">
+    <div id="viewEditor" class="hidden space-y-3">
       <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
         <div class="flex items-center gap-2">
           <button onclick="changePage(-1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">◀</button>
@@ -408,7 +399,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Kliknij kafelek, aby przesunąć</span>
+          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek myszką lub dotykiem</span>
           <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
             🔄 Resetuj pozycje
           </button>
@@ -464,7 +455,7 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const DB_NAME = "ProtokolantDB_A2_v5";
+    const DB_NAME = "ProtokolantDB_A2_v7";
     let db;
     const initDB = () => new Promise((resolve) => {
       const req = indexedDB.open(DB_NAME, 1);
@@ -479,7 +470,7 @@
       req.onerror = () => resolve(null);
     });
 
-    // PEŁNA MATRYCA (Strona 6 pusta, brak skreśleń, pełne 12 pól Pkt 9, 8 pól Pkt 6, 9 pól Pkt 4)
+    // Pełna matryca współrzędnych
     const bazowaMatryca = {
       // Strona 1
       "nr_protokolu": { page: 1, x: 205, y: 78, fsize: 13 },
@@ -489,19 +480,16 @@
       "typ_maszyny": { page: 1, x: 245, y: 312, fsize: 11 },
       "adres": { page: 1, x: 245, y: 338, fsize: 10.5 },
       
-      // Data rozbita na 3 niezależne kafelki pod kreski formularza
       "data_dd": { page: 1, x: 235, y: 364, fsize: 11 },
       "data_mm": { page: 1, x: 285, y: 364, fsize: 11 },
       "data_rr": { page: 1, x: 345, y: 364, fsize: 11 },
 
-      // Przyrząd
       "m_nazwa": { page: 1, x: 100, y: 442, fsize: 11 },
       "m_typ": { page: 1, x: 200, y: 442, fsize: 11 },
       "m_nr": { page: 1, x: 290, y: 442, fsize: 11 },
       "m_zast": { page: 1, x: 400, y: 442, fsize: 11 },
       "swiadectwo": { page: 1, x: 120, y: 504, fsize: 10.5 },
 
-      // Selektywność 230V
       "in_p": { page: 1, x: 350, y: 624, fsize: 11, txt: "10" },
       "typ_in_p": { page: 1, x: 440, y: 624, fsize: 11, txt: "B" },
       "din_p": { page: 1, x: 350, y: 650, fsize: 11, txt: "0,03" },
@@ -515,22 +503,17 @@
       "napiecie": { page: 2, x: 130, y: 104, fsize: 11.5 },
       "czest": { page: 2, x: 130, y: 128, fsize: 11.5, txt: "50,0" },
       
-      // Pkt 4: Izolacja (Wynik, Wymagana=1, Ocena)
       "iz1": { page: 2, x: 205, y: 280, fsize: 11 },
       "iz_req1": { page: 2, x: 320, y: 280, fsize: 11 },
-      "iz_ocena1": { page: 2, x: 450, y: 280, fsize: 10 },
       "iz2": { page: 2, x: 205, y: 300, fsize: 11 },
       "iz_req2": { page: 2, x: 320, y: 300, fsize: 11 },
-      "iz_ocena2": { page: 2, x: 450, y: 300, fsize: 10 },
       "iz3": { page: 2, x: 205, y: 320, fsize: 11 },
       "iz_req3": { page: 2, x: 320, y: 320, fsize: 11 },
-      "iz_ocena3": { page: 2, x: 450, y: 320, fsize: 10 },
 
       "temp": { page: 2, x: 160, y: 348, fsize: 11 },
       "wilg": { page: 2, x: 150, y: 374, fsize: 11 },
       "prob": { page: 2, x: 150, y: 400, fsize: 11, txt: "500" },
       
-      // Ciągłość PE (8 wierszy)
       "pe_0": { page: 2, x: 395, y: 520, fsize: 11 },
       "pe_1": { page: 2, x: 395, y: 540, fsize: 11 },
       "pe_2": { page: 2, x: 395, y: 560, fsize: 11 },
@@ -540,7 +523,7 @@
       "pe_6": { page: 2, x: 395, y: 640, fsize: 11 },
       "pe_7": { page: 2, x: 395, y: 660, fsize: 11 },
 
-      // Strona 3: Pkt 6 Uziemienie (8 pól)
+      // Strona 3: Pkt 6 Uziemienie
       "u1": { page: 3, x: 80, y: 200, fsize: 11 },
       "u2": { page: 3, x: 80, y: 220, fsize: 11 },
       "u3": { page: 3, x: 80, y: 240, fsize: 11 },
@@ -548,7 +531,6 @@
       "u_kp": { page: 3, x: 230, y: 220, fsize: 11 },
       "u_r": { page: 3, x: 305, y: 220, fsize: 11 },
       "u_dop": { page: 3, x: 395, y: 220, fsize: 11 },
-      "u_ocena": { page: 3, x: 495, y: 220, fsize: 11 },
 
       // RCD Maszyna
       "rcd_m_tx5": { page: 3, x: 440, y: 720, fsize: 11 },
@@ -562,28 +544,25 @@
       "rcd_p_i": { page: 4, x: 310, y: 250, fsize: 11 },
       "rcd_p_ub": { page: 4, x: 310, y: 270, fsize: 11, txt: "0,3" },
 
-      // Strona 4: Pkt 9 Ochrona przeciwporażeniowa (12 pól)
+      // Strona 4: Pkt 9 Ochrona przeciwporażeniowa
       "p9_in_1": { page: 4, x: 145, y: 480, fsize: 11 },
       "p9_k_1": { page: 4, x: 195, y: 480, fsize: 11 },
       "p9_ia_1": { page: 4, x: 260, y: 480, fsize: 11 },
       "p9_zsm_1": { page: 4, x: 335, y: 480, fsize: 11 },
       "p9_zsd_1": { page: 4, x: 420, y: 480, fsize: 11 },
-      "p9_ocena_1": { page: 4, x: 505, y: 480, fsize: 11 },
 
       "p9_in_2": { page: 4, x: 145, y: 520, fsize: 11 },
       "p9_k_2": { page: 4, x: 195, y: 520, fsize: 11 },
       "p9_ia_2": { page: 4, x: 260, y: 520, fsize: 11 },
       "p9_zsm_2": { page: 4, x: 335, y: 520, fsize: 11 },
       "p9_zsd_2": { page: 4, x: 420, y: 520, fsize: 11 },
-      "p9_ocena_2": { page: 4, x: 505, y: 520, fsize: 11 },
 
       // Strona 5: OFFGRID
       "nd1": { page: 5, x: 320, y: 330, fsize: 24, txt: "N/D" },
       "nd2": { page: 5, x: 320, y: 700, fsize: 24, txt: "N/D" }
-      // STRONA 6: BRAK JAKICHKOLWIEK ELEMENTÓW (CZYSTA)
     };
 
-    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v5")) || bazowaMatryca;
+    let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v7")) || bazowaMatryca;
     let loadedPdfBytes = null;
     let pdfDocPreview = null;
     let currentPage = 1;
@@ -746,20 +725,21 @@
         tag.style.left = `${item.x * currentScale}px`;
         tag.style.top = `${item.y * currentScale}px`;
 
+        // Hybrydowa obsługa: kliknięcie wybiera kafelek, przeciąganie płynnie przesuwa go po arkuszu
         tag.addEventListener("pointerdown", (e) => startDrag(e, id));
         layer.appendChild(tag);
       }
     }
 
+    // Bezpośrednie płynne przeciąganie kursorem / palcem (Drag & Drop)
     function startDrag(e, id) {
       e.preventDefault();
       e.stopPropagation();
       activeBoxId = id;
 
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
-
       document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
-      e.currentTarget.classList.add('selected');
+      const targetEl = e.currentTarget;
+      targetEl.classList.add('selected');
       updateDpadStatus();
 
       const startX = e.clientX;
@@ -767,27 +747,29 @@
       const initX = matryca[id].x;
       const initY = matryca[id].y;
 
-      function onMove(ev) {
+      function onPointerMove(ev) {
         ev.preventDefault();
         const dx = (ev.clientX - startX) / currentScale;
         const dy = (ev.clientY - startY) / currentScale;
         matryca[id].x = Math.round(initX + dx);
         matryca[id].y = Math.round(initY + dy);
-        e.currentTarget.style.left = `${matryca[id].x * currentScale}px`;
-        e.currentTarget.style.top = `${matryca[id].y * currentScale}px`;
+        targetEl.style.left = `${matryca[id].x * currentScale}px`;
+        targetEl.style.top = `${matryca[id].y * currentScale}px`;
         updateDpadStatus();
       }
 
-      function onUp(ev) {
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onUp);
-        try { e.currentTarget.releasePointerCapture(ev.pointerId); } catch (_) {}
+      function onPointerUp(ev) {
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
       }
 
-      window.addEventListener("pointermove", onMove, { passive: false });
-      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointermove", onPointerMove, { passive: false });
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointercancel", onPointerUp);
     }
 
+    // Mikro-przesuwanie przyciskami D-Pada / strzałkami
     function nudge(dx, dy) {
       if (!activeBoxId || !matryca[activeBoxId]) return;
       matryca[activeBoxId].x += dx;
@@ -813,7 +795,7 @@
       activeBoxId = null;
       document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
       document.getElementById("mobileDpad").classList.add("hidden");
-      document.getElementById("desktopActiveField").innerText = "Kliknij kafelek, aby przesunąć";
+      document.getElementById("desktopActiveField").innerText = "Chwyć kafelek myszką lub dotykiem";
     }
 
     function updateDpadStatus() {
@@ -825,6 +807,7 @@
       document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
     }
 
+    // Obsługa strzałek z klawiatury
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
       if (!activeBoxId || !matryca[activeBoxId]) return;
@@ -838,14 +821,14 @@
     });
 
     function zapiszMatryce() {
-      localStorage.setItem("matryca_paczkomat_v5", JSON.stringify(matryca));
+      localStorage.setItem("matryca_paczkomat_v7", JSON.stringify(matryca));
       alert("✅ Matryca współrzędnych została trwale zapisana!");
     }
 
     function przywrocWspolrzedne() {
       if (confirm("Czy na pewno chcesz przywrócić domyślne położenie kafelków?")) {
         matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-        localStorage.removeItem("matryca_paczkomat_v5");
+        localStorage.removeItem("matryca_paczkomat_v7");
         renderPage(currentPage);
       }
     }
