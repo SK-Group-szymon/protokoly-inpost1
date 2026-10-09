@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v11_modular";
+const DB_NAME = "ProtokolantDB_A2_v12_wysiwyg_strikes";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,8 +15,9 @@ const getPDF = () => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// TWOJA MATRYCA WSPÓŁRZĘDNYCH
+// MATRYCA WSPÓŁRZĘDNYCH Z RUCHOMYMI KAFELKAMI I RUCHOMYMI SKREŚLENIAMI
 const bazowaMatryca = {
+  // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
   "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
   "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
@@ -39,7 +40,12 @@ const bazowaMatryca = {
   "typ_in_prz":{"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
   "din_prz":{"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
   "typ_din_prz":{"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
-  
+
+  // Ruchome skreślenia Strona 1
+  "skr_p1_indoor":{"page":1,"x":332,"y":258,"width":165,"isStrike":true,"label":"── INDOOR/AUTONOMICZNA* ──"},
+  "skr_p1_selektywnosc":{"page":1,"x":262,"y":748,"width":28,"isStrike":true,"label":"── NIE ──"},
+
+  // Strona 2
   "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
   "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
   "iz1":{"page":2,"x":222,"y":287,"fsize":11},
@@ -59,7 +65,24 @@ const bazowaMatryca = {
   "pe_5":{"page":2,"x":406,"y":608,"fsize":11},
   "pe_6":{"page":2,"x":405,"y":625,"fsize":11},
   "pe_7":{"page":2,"x":404,"y":641,"fsize":11},
-  
+
+  // Ruchome skreślenia Strona 2
+  "skr_p2_napiecie":{"page":2,"x":315,"y":147,"width":28,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_iz1":{"page":2,"x":458,"y":285,"width":65,"isStrike":true,"label":"── Negatywny* ──"},
+  "skr_p2_iz2":{"page":2,"x":458,"y":303,"width":65,"isStrike":true,"label":"── Negatywny* ──"},
+  "skr_p2_iz3":{"page":2,"x":458,"y":320,"width":65,"isStrike":true,"label":"── Negatywny* ──"},
+  "skr_p2_pe1":{"page":2,"x":498,"y":504,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe2":{"page":2,"x":498,"y":533,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe3":{"page":2,"x":498,"y":554,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe4":{"page":2,"x":498,"y":571,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe5":{"page":2,"x":498,"y":589,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe6":{"page":2,"x":498,"y":607,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe7":{"page":2,"x":498,"y":624,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_pe8":{"page":2,"x":498,"y":640,"width":26,"isStrike":true,"label":"── NIE ──"},
+  "skr_p2_ogledziny":{"page":2,"x":336,"y":682,"width":78,"isStrike":true,"label":"── NEGATYWNY* ──"},
+  "skr_p2_mocowanie":{"page":2,"x":272,"y":707,"width":86,"isStrike":true,"label":"── STWIERDZONO ──"},
+
+  // Strona 3
   "u1":{"page":3,"x":111,"y":197,"fsize":11},
   "u2":{"page":3,"x":112,"y":216,"fsize":11},
   "u3":{"page":3,"x":114,"y":232,"fsize":11},
@@ -71,7 +94,17 @@ const bazowaMatryca = {
   "rcd_m_tx1":{"page":3,"x":385,"y":679,"fsize":11},
   "rcd_m_i":{"page":3,"x":274,"y":693,"fsize":11},
   "rcd_m_ub":{"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
-  
+
+  // Ruchome skreślenia Strona 3
+  "skr_p3_uziemienie":{"page":3,"x":496,"y":214,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p3_ogledziny_rcd":{"page":3,"x":315,"y":617,"width":78,"isStrike":true,"label":"── NEGATYWNY* ──"},
+  "skr_p3_test_rcd":{"page":3,"x":425,"y":642,"width":68,"isStrike":true,"label":"── NIE DZIAŁA* ──"},
+  "skr_p3_wylaczyl":{"page":3,"x":485,"y":667,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p3_50prc":{"page":3,"x":125,"y":812,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p3_nie_jest":{"page":3,"x":160,"y":832,"width":55,"isStrike":true,"label":"── NIE JEST* ──"},
+  "skr_p3_nie_moze":{"page":3,"x":310,"y":832,"width":62,"isStrike":true,"label":"── NIE MOŻE* ──"},
+
+  // Strona 4
   "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
   "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
   "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
@@ -86,17 +119,29 @@ const bazowaMatryca = {
   "p9_ia_2":{"page":4,"x":260,"y":520,"fsize":11},
   "p9_zsm_2":{"page":4,"x":365,"y":522,"fsize":11},
   "p9_zsd_2":{"page":4,"x":420,"y":520,"fsize":11},
-  
+
+  // Ruchome skreślenia Strona 4
+  "skr_p4_ogledziny_rcd":{"page":4,"x":315,"y":112,"width":78,"isStrike":true,"label":"── NEGATYWNY* ──"},
+  "skr_p4_test_rcd":{"page":4,"x":425,"y":137,"width":68,"isStrike":true,"label":"── NIE DZIAŁA* ──"},
+  "skr_p4_wylaczyl":{"page":4,"x":485,"y":162,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p4_50prc":{"page":4,"x":125,"y":292,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p4_nie_jest":{"page":4,"x":160,"y":312,"width":55,"isStrike":true,"label":"── NIE JEST* ──"},
+  "skr_p4_nie_moze":{"page":4,"x":310,"y":312,"width":62,"isStrike":true,"label":"── NIE MOŻE* ──"},
+  "skr_p4_zs1":{"page":4,"x":498,"y":474,"width":26,"isStrike":true,"label":"── NIE* ──"},
+  "skr_p4_zs2":{"page":4,"x":498,"y":522,"width":26,"isStrike":true,"label":"── NIE* ──"},
+
+  // Strona 5
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-  // Pozycje na stronie 6
+  // Strona 6
   "podpis":{"page":6,"x":104,"y":435,"fsize":13,"txt":"Szymon Kacprzak"},
   "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
-  "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"}
+  "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"},
+  "skr_p6_nie_umozliwia":{"page":6,"x":268,"y":188,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v11")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v12")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -123,7 +168,7 @@ function ustawProfilMiernika(id) {
 
   document.getElementById("pMiernik1Btn").className = id === 1 ? "px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white" : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white";
   document.getElementById("pMiernik2Btn").className = id === 2 ? "px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white" : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white";
-  pokazToast("🛠️ Zmiana miernika", `Wybrano: ${p.typ} (${p.nr})`);
+  pokazToast("🛠️ Miernik", `Wybrano: ${p.typ} (${p.nr})`);
 }
 
 function zapiszProfilMiernika() {
@@ -137,7 +182,7 @@ function zapiszProfilMiernika() {
   localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
 }
 
-// OCR ZE ZDJĘCIA TABLICZKI
+// OCR
 document.getElementById("ocrInput").addEventListener("change", async (e) => {
   const f = e.target.files[0];
   if (f) przetworzZdjecieTabliczki(f);
@@ -154,7 +199,7 @@ window.addEventListener("paste", (e) => {
 });
 
 async function przetworzZdjecieTabliczki(file) {
-  pokazToast("⏳ Analiza OCR", "Trwa odczytywanie tabliczki...");
+  pokazToast("⏳ OCR", "Odczytywanie tabliczki...");
   try {
     const worker = await Tesseract.createWorker("pol+eng");
     const ret = await worker.recognize(file);
@@ -173,7 +218,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// ASYSTENT GŁOSOWY
+// GŁOS
 let recognition = null;
 let czyNagrywa = false;
 
@@ -184,7 +229,6 @@ function initGlos() {
   rec.lang = "pl-PL";
   rec.continuous = true;
   rec.interimResults = false;
-
   rec.onresult = (event) => {
     const last = event.results.length - 1;
     parsujGlos(event.results[last][0].transcript.toLowerCase().trim());
@@ -195,16 +239,13 @@ function initGlos() {
 
 function toggleGlos() {
   if (!recognition) recognition = initGlos();
-  if (!recognition) {
-    alert("Przeglądarka nie obsługuje mowy (użyj Chrome/Safari)!");
-    return;
-  }
+  if (!recognition) { alert("Brak obsługi mowy w przeglądarce!"); return; }
   if (!czyNagrywa) {
     czyNagrywa = true;
     recognition.start();
     document.getElementById("btnGlos").className = "flex items-center gap-1 bg-rose-600 text-white px-2.5 py-1 rounded-lg font-bold animate-pulse";
     document.getElementById("micText").innerText = "Słucham...";
-    pokazToast("🎙️ Mikrofon aktywny", "Dyktuj pomiary...");
+    pokazToast("🎙️ Mikrofon aktywny", "Mów wartości pomiarowe...");
   } else {
     czyNagrywa = false;
     recognition.stop();
@@ -214,7 +255,7 @@ function toggleGlos() {
 }
 
 function parsujGlos(t) {
-  pokazToast("🗣️ Usłyszano:", t);
+  pokazToast("🗣️ Mowa:", t);
   if (t.includes("napięcie") || t.includes("wolt")) {
     const num = t.match(/\d+[\.,]?\d*/);
     if (num) { document.getElementById("napiecie").value = num[0].replace('.', ','); walidujNormy(); }
@@ -248,7 +289,7 @@ function pokazToast(tytul, tresc) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-// SIGNATURE PAD (ZAPISUJĄCY SIĘ TRWALE NA ZAWSZE)
+// SIGNATURE PAD
 const sigCanvas = document.getElementById("sigCanvas");
 const sigCtx = sigCanvas.getContext("2d");
 let rysuje = false;
@@ -261,8 +302,6 @@ function resizeSigCanvas() {
   sigCtx.lineWidth = 2.4;
   sigCtx.lineCap = "round";
   sigCtx.strokeStyle = "#0f2b6b";
-
-  // Wczytanie trwałego podpisu z pamięci urządzenia
   wczytajZapisanyPodpis();
 }
 
@@ -302,20 +341,17 @@ sigCanvas.addEventListener("pointermove", (e) => {
 window.addEventListener("pointerup", () => {
   if (rysuje) {
     rysuje = false;
-    // Automatyczny zapis podpisu w pamięci urządzenia po skończeniu rysowania
-    const dataUrl = sigCanvas.toDataURL("image/png");
-    localStorage.setItem("trwaly_podpis_png", dataUrl);
-    pokazToast("✍️ Podpis zapisany", "Zapamiętano Twój podpis dla wszystkich protokołów!");
+    localStorage.setItem("trwaly_podpis_png", sigCanvas.toDataURL("image/png"));
+    pokazToast("✍️ Podpis", "Zapisano podpis na stałe!");
   }
 });
 
 function wyczyscPodpis() {
   sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
   localStorage.removeItem("trwaly_podpis_png");
-  pokazToast("🗑️ Usunięto podpis", "Możesz złożyć nowy podpis.");
+  pokazToast("🗑️ Podpis", "Usunięto podpis z pamięci.");
 }
 
-// AUTO-KADROWANIE PODPISU
 function pobierzSkadrowanyPodpis() {
   const savedData = localStorage.getItem("trwaly_podpis_png") || sigCanvas.toDataURL("image/png");
   const w = sigCanvas.width;
@@ -354,16 +390,11 @@ function pobierzSkadrowanyPodpis() {
   cCanvas.height = cropH;
   cCanvas.getContext("2d").drawImage(sigCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
 
-  return {
-    dataUrl: cCanvas.toDataURL("image/png"),
-    aspect: cropW / cropH
-  };
+  return { dataUrl: cCanvas.toDataURL("image/png"), aspect: cropW / cropH };
 }
 
 // HISTORIA
-function pobierzHistorie() {
-  return JSON.parse(localStorage.getItem("archiwum_protokolow")) || [];
-}
+function pobierzHistorie() { return JSON.parse(localStorage.getItem("archiwum_protokolow")) || []; }
 
 function zapiszDoHistorii() {
   const arch = pobierzHistorie();
@@ -383,9 +414,7 @@ function zapiszDoHistorii() {
   odswiezLicznikHistorii();
 }
 
-function odswiezLicznikHistorii() {
-  document.getElementById("historiaCount").innerText = pobierzHistorie().length;
-}
+function odswiezLicznikHistorii() { document.getElementById("historiaCount").innerText = pobierzHistorie().length; }
 
 function otworzHistorie() {
   const lista = document.getElementById("historiaLista");
@@ -409,9 +438,7 @@ function otworzHistorie() {
   document.getElementById("modalHistoria").classList.remove("hidden");
 }
 
-function zamknijHistorie() {
-  document.getElementById("modalHistoria").classList.add("hidden");
-}
+function zamknijHistorie() { document.getElementById("modalHistoria").classList.add("hidden"); }
 
 function wczytajZHistorii(id) {
   const item = pobierzHistorie().find(x => x.id === id);
@@ -422,12 +449,12 @@ function wczytajZHistorii(id) {
     document.getElementById("typ_maszyny").value = item.typ_maszyny;
     document.getElementById("napiecie").value = item.napiecie;
     zamknijHistorie();
-    pokazToast("📋 Wczytano dane", `Przywrócono: ${item.nr_seryjny}`);
+    pokazToast("📋 Wczytano", `Przywrócono: ${item.nr_seryjny}`);
   }
 }
 
 function usunZHistorii(id) {
-  localStorage.setItem("archiwum_protokolow", JSON.stringify(pembierzHistorie().filter(x => x.id !== id)));
+  localStorage.setItem("archiwum_protokolow", JSON.stringify(pobierzHistorie().filter(x => x.id !== id)));
   otworzHistorie();
   odswiezLicznikHistorii();
 }
@@ -440,7 +467,7 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// KALKULACJE I WALIDACJA
+// KALKULACJE
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -464,13 +491,8 @@ for(let i=0; i<8; i++) {
 function walidujNormy() {
   const v = toN(document.getElementById("napiecie").value);
   const vBadge = document.getElementById("vBadge");
-  if (v < 207 || v > 253) {
-    vBadge.innerText = "Błąd normy!";
-    vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-  } else {
-    vBadge.innerText = "Norma OK";
-    vBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-  }
+  vBadge.innerText = (v < 207 || v > 253) ? "Błąd normy!" : "Norma OK";
+  vBadge.className = (v < 207 || v > 253) ? "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30" : "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
 }
 
 function obliczUziemienie() {
@@ -485,13 +507,8 @@ function obliczUziemienie() {
   document.getElementById("u_r").value = toS(r);
 
   const uBadge = document.getElementById("uBadge");
-  if (r > 10.0) {
-    uBadge.innerText = "R > 10 Ω (Zagrożenie!)";
-    uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
-  } else {
-    uBadge.innerText = "Norma OK";
-    uBadge.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-  }
+  uBadge.innerText = r > 10.0 ? "R > 10 Ω (Zagrożenie!)" : "Norma OK";
+  uBadge.className = r > 10.0 ? "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30" : "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
 }
 
 function aiUzupelnijWszystko() {
@@ -501,7 +518,7 @@ function aiUzupelnijWszystko() {
   document.getElementById("rcd_p_i").value = toS(20.4 + (Math.random() * 1.9), 1);
   obliczUziemienie();
   walidujNormy();
-  pokazToast("✨ AI Dopełnienie", "Wprowadzono spójne wartości pomiarowe.");
+  pokazToast("✨ AI", "Wprowadzono kompletne wyniki pomiarowe.");
 }
 
 function aiGenerujPE() {
@@ -511,7 +528,7 @@ function aiGenerujPE() {
   }
 }
 
-// PODGLĄD PDF & DRAG & DROP
+// WYSIWYG
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getPDF();
@@ -529,6 +546,8 @@ async function loadTemplate() {
   if (loadedPdfBytes) {
     document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
     initPdfPreview();
+  } else {
+    document.getElementById("szablonStatusText").innerHTML = "Wskaż plik <strong>szablon.pdf</strong>:";
   }
   odswiezLicznikHistorii();
   resizeSigCanvas();
@@ -577,17 +596,24 @@ function renderDraggableTags(num) {
   for(const [id, item] of Object.entries(matryca)) {
     if (item.page !== num) continue;
 
-    let displayVal = item.txt;
-    if (!displayVal) {
-      const el = document.getElementById(id);
-      displayVal = el ? el.value : "—";
-    }
-
     const tag = document.createElement("div");
     tag.id = `tag_${id}`;
-    tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
-    tag.innerText = displayVal;
-    tag.style.fontSize = `${item.fsize * currentScale}px`;
+
+    if (item.isStrike) {
+      tag.className = `drag-box strike-box ${id === activeBoxId ? 'selected' : ''}`;
+      tag.innerText = item.label || "── NIE ──";
+      tag.style.fontSize = `${11 * currentScale}px`;
+    } else {
+      let displayVal = item.txt;
+      if (!displayVal) {
+        const el = document.getElementById(id);
+        displayVal = el ? el.value : "—";
+      }
+      tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
+      tag.innerText = displayVal;
+      tag.style.fontSize = `${item.fsize * currentScale}px`;
+    }
+
     tag.style.left = `${item.x * currentScale}px`;
     tag.style.top = `${item.y * currentScale}px`;
 
@@ -675,14 +701,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v11", JSON.stringify(matryca));
-  alert("✅ Matryca współrzędnych została trwale zapisana!");
+  localStorage.setItem("matryca_paczkomat_v12", JSON.stringify(matryca));
+  alert("✅ Matryca (wartości i pozycje skreśleń) została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
-  if (confirm("Przywrócić fabryczną matrycę?")) {
+  if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v11");
+    localStorage.removeItem("matryca_paczkomat_v12");
     renderPage(currentPage);
   }
 }
@@ -718,10 +744,7 @@ function switchTab(tab) {
   }
 }
 
-// 100% AUTONOMICZNE GENEROWANIE PDF:
-// - TRWAŁY PODPIS
-// - SKREŚLENIA NORMOWE
-// - STATYCZNY FONT BEZ ROZJEŻDŻANIA LITER
+// GENEROWANIE 100% AUTONOMICZNEGO DOKUMENTU PDF
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -741,7 +764,7 @@ async function generujWydrukPDF() {
     let customFont = null;
     let uzytoHelvetiki = false;
 
-    // Statyczny font Caveat Bold bez błędu kerningu
+    // Bezpośrednie źródła do statycznego fontu TrueType
     const fontUrls = [
       "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf",
       "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf"
@@ -758,12 +781,13 @@ async function generujWydrukPDF() {
     }
 
     if (!customFont) {
+      // Fallback awaryjny
       customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
       uzytoHelvetiki = true;
     }
 
     const pages = pdfDoc.getPages();
-    const ink = PDFLib.rgb(0.08, 0.18, 0.45);
+    const ink = PDFLib.rgb(0.08, 0.18, 0.45); // Granatowy atrament
 
     const draw = (pNum, txt, x, y, size=11) => {
       const p = pages[pNum - 1];
@@ -776,28 +800,33 @@ async function generujWydrukPDF() {
       });
     };
 
-    const strike = (pNum, x1, y1, x2, y2) => {
+    const drawStrikeLine = (pNum, x, y, width) => {
       const p = pages[pNum - 1];
       const h = p.getSize().height;
       p.drawLine({
-        start: { x: x1, y: h - y1 },
-        end: { x: x2, y: h - y2 },
-        thickness: 1.3,
+        start: { x: x, y: h - y },
+        end: { x: x + width, y: h - y },
+        thickness: 1.4,
         color: ink
       });
     };
 
     const maTrwalyPodpis = localStorage.getItem("trwaly_podpis_png") !== null;
 
-    // 1. Nanoszenie wartości liczbowych i tekstowych
+    // 1. Nanoszenie wartości oraz ruchomych skreśleń
     for (const [id, item] of Object.entries(matryca)) {
+      if (item.isStrike) {
+        // Wypalenie ruchomej linii skreślenia dokładnie tam, gdzie ustawiłeś czerwony kafelek
+        drawStrikeLine(item.page, item.x, item.y, item.width || 30);
+        continue;
+      }
+
       let val = item.txt;
       if (!val) {
         const el = document.getElementById(id);
         if (el) val = el.value;
       }
       
-      // Jeśli mamy narysowany podpis graficzny, pomijamy tekst w polu podpis
       if (id === "podpis" && maTrwalyPodpis) continue;
 
       if (val) {
@@ -805,20 +834,7 @@ async function generujWydrukPDF() {
       }
     }
 
-    // 2. Automatyczne przekreślenia normowe (100% autonomiczny protokół)
-    strike(1, 350, 155, 490, 155); // INDOOR / AUTONOMICZNA*
-    strike(1, 260, 747, 285, 747); // NIE (selektywność)
-    strike(2, 315, 147, 345, 147); // NIE (napięcie)
-    [287, 304, 320].forEach(y => strike(2, 455, y - 3, 525, y - 3)); // Negatywny (izolacja)
-    [505, 534, 555, 572, 590, 608, 625, 641].forEach(y => strike(2, 495, y - 3, 525, y - 3)); // NIE (PE)
-    strike(3, 495, 212, 525, 212); // NIE (uziemienie)
-    strike(3, 495, 735, 525, 735); // NIE (RCD maszyna)
-    strike(4, 495, 225, 525, 225); // NIE (RCD przyłącze)
-    strike(4, 500, 474, 525, 474); // NIE (Zs Paczkomat)
-    strike(4, 500, 522, 525, 522); // NIE (Zs Przyłącze)
-    strike(6, 265, 388, 425, 388); // NIE UMOŻLIWIAJĄCYM*
-
-    // 3. Wypalenie trwałego podpisu graficznego w miejscu "Szymon Kacprzak"
+    // 2. Wypalenie trwałego podpisu graficznego w miejscu "Szymon Kacprzak"
     if (maTrwalyPodpis) {
       const skadrowany = pobierzSkadrowanyPodpis();
       if (skadrowany) {
