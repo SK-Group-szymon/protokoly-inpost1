@@ -13,7 +13,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -22,7 +22,7 @@
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            hand: ['"Caveat"', 'cursive']
+            hand: ['"Kalam"', 'cursive']
           }
         }
       }
@@ -57,7 +57,7 @@
       white-space: nowrap;
       line-height: 1.1;
       transform: translate(0, -50%);
-      font-family: 'Caveat', cursive;
+      font-family: 'Kalam', cursive;
       color: #0f2b6b;
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
@@ -90,7 +90,7 @@
           <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • 100% Autonomiczny</p>
+        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • System Terenowy</p>
       </div>
     </div>
 
@@ -118,7 +118,7 @@
     </div>
   </header>
 
-  <!-- Pasek narzędziowy z przyciskiem do wgrania czcionki -->
+  <!-- Pasek narzędziowy -->
   <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -136,10 +136,6 @@
       <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-[11px]">
         Szablon PDF
         <input type="file" id="fileUpload" accept="application/pdf" class="hidden">
-      </label>
-      <label class="cursor-pointer bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/40 px-2.5 py-1 rounded-lg font-bold transition text-[11px]">
-        🔤 Wgraj czcionkę (.ttf)
-        <input type="file" id="fontUpload" accept=".ttf" class="hidden" onchange="wgrajWlasnaCzcionke(this.files[0])">
       </label>
     </div>
   </div>
@@ -250,7 +246,7 @@
         <div class="grid grid-cols-3 gap-3 text-xs">
           <div>
             <label class="block text-slate-400 mb-1 text-[11px] text-center">Napięcie Uo [V]</label>
-            <input type="text" inputmode="decimal" id="napiecie" value="221,7" oninput="walidujNormy()" class="w-full glass-input rounded-xl p-2 text-white font-mono font-bold text-center">
+            <input type="text" inputmode="decimal" id="napiecie" value="221,7" class="w-full glass-input rounded-xl p-2 text-white font-mono font-bold text-center">
           </div>
           <div>
             <label class="block text-slate-400 mb-1 text-[11px] text-center">Temperatura [°C]</label>
@@ -417,22 +413,6 @@
           </div>
         </div>
       </div>
-
-      <!-- 10. Trwały Podpis Odręczny -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>✍️</span> Twój Trwały Podpis Odręczny (Zapisany na Stałe)
-          </h2>
-          <button onclick="wyczyscPodpis()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Zmień podpis</button>
-        </div>
-        <p class="text-[11px] text-slate-400 mb-2">
-          Podpisz się poniżej tylko <strong>raz</strong>. Przeglądarka zapamięta Twój podpis na stałe i wstawi go do każdego protokołu:
-        </p>
-        <div class="bg-white rounded-xl overflow-hidden border-2 border-indigo-500/40 shadow-inner">
-          <canvas id="sigCanvas" class="w-full h-28 block touch-none cursor-crosshair bg-white"></canvas>
-        </div>
-      </div>
     </div>
 
     <!-- WIDOK 2: RUCHOMY PDF & SKREŚLENIA -->
@@ -444,7 +424,7 @@
           <button onclick="changePage(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">▶</button>
         </div>
         <div class="flex items-center gap-2">
-          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek lub czerwone skreślenie myszką</span>
+          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek lub skreślenie myszką</span>
           <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
             🔄 Resetuj
           </button>
