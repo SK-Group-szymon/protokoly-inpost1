@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v18_stable";
+const DB_NAME = "ProtokolantDB_A2_v19_bulletproof";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// PEŁNA MATRYCA WSPÓŁRZĘDNYCH (WARTOŚCI + SKREŚLENIA)
+// PEŁNA MATRYCA WSPÓŁRZĘDNYCH
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -135,7 +135,7 @@ const bazowaMatryca = {
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v18_stable")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v19")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -188,22 +188,18 @@ async function wgrajWlasnaCzcionke(file) {
   }
 }
 
-// BEZPIECZNE POBIERANIE CZCIONKI (GITHUB -> INDEXEDDB -> CDN)
+// POBIERANIE CZCIONKI ODRĘCZNEJ
 async function getHandwritingFontBytes() {
-  // 1. Sprawdź czysty plik czcionka.ttf prosto z GitHuba
   try {
     const res = await fetch("czcionka.ttf?v=" + Date.now(), { cache: "no-store" });
     if (res.ok) {
       const buffer = await res.arrayBuffer();
-      if (buffer.byteLength > 20000) {
+      if (buffer && buffer.byteLength > 20000) {
         return buffer;
       }
     }
-  } catch (err) {
-    console.warn("Brak czcionka.ttf na GitHubie:", err);
-  }
+  } catch (_) {}
 
-  // 2. Sprawdź pamięć podręczną (IndexedDB)
   try {
     const savedFont = await getAsset("reczny_font_ttf");
     if (savedFont && savedFont.byteLength > 20000) {
@@ -211,7 +207,6 @@ async function getHandwritingFontBytes() {
     }
   } catch (_) {}
 
-  // 3. Fallback: oficjalny statyczny Caveat-Bold.ttf
   try {
     const fallbackRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf");
     if (fallbackRes.ok) {
@@ -258,7 +253,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// ASYSTENT GŁOSOWY
+// GŁOS
 let recognition = null;
 let czyNagrywa = false;
 
@@ -334,7 +329,7 @@ function pokazToast(tytul, tresc) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-// SIGNATURE PAD (ZAPIS W PAMIĘCI URZĄDZENIA)
+// SIGNATURE PAD
 const sigCanvas = document.getElementById("sigCanvas");
 const sigCtx = sigCanvas.getContext("2d");
 let rysuje = false;
@@ -395,49 +390,6 @@ function wyczyscPodpis() {
   sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
   localStorage.removeItem("trwaly_podpis_png");
   pokazToast("🗑️ Podpis", "Usunięto podpis z pamięci.");
-}
-
-function pobierzSkadrowanyPodpis() {
-  const savedData = localStorage.getItem("trwaly_podpis_png");
-  if (!savedData) return null;
-
-  const w = sigCanvas.width;
-  const h = sigCanvas.height;
-  const imgData = sigCtx.getImageData(0, 0, w, h);
-  const d = imgData.data;
-
-  let minX = w, minY = h, maxX = 0, maxY = 0;
-  let wykrytoTusz = false;
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (d[(y * w + x) * 4 + 3] > 20) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-        wykrytoTusz = true;
-      }
-    }
-  }
-
-  if (!wykrytoTusz) return null;
-
-  const pad = 6;
-  minX = Math.max(0, minX - pad);
-  minY = Math.max(0, minY - pad);
-  maxX = Math.min(w, maxX + pad);
-  maxY = Math.min(h, maxY + pad);
-
-  const cropW = maxX - minX;
-  const cropH = maxY - minY;
-
-  const cCanvas = document.createElement("canvas");
-  cCanvas.width = cropW;
-  cCanvas.height = cropH;
-  cCanvas.getContext("2d").drawImage(sigCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-
-  return { dataUrl: cCanvas.toDataURL("image/png"), aspect: cropW / cropH };
 }
 
 // HISTORIA
@@ -515,9 +467,7 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// ========================================================
 // MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
-// ========================================================
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -527,11 +477,9 @@ function usunPolskieZnaki(tekst) {
   return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
 }
 
-// Dynamiczne obliczanie Zsd = U0 / (k * In)
 function przeliczPunkt9() {
   const u0 = toN(document.getElementById("napiecie").value) || 230.0;
 
-  // Wiersz 1: Paczkomat (B10, k=5)
   const in1 = toN(document.getElementById("p9_in_1").value) || 10;
   const k1 = toN(document.getElementById("p9_k_1").value) || 5;
   const ia1 = in1 * k1;
@@ -539,7 +487,6 @@ function przeliczPunkt9() {
   const zsd1 = u0 / ia1;
   document.getElementById("p9_zsd_1").value = toS(zsd1, 2);
 
-  // Wiersz 2: Przyłącze (B16, k=5)
   const in2 = toN(document.getElementById("p9_in_2").value) || 16;
   const k2 = toN(document.getElementById("p9_k_2").value) || 5;
   const ia2 = in2 * k2;
@@ -548,7 +495,6 @@ function przeliczPunkt9() {
   document.getElementById("p9_zsd_2").value = toS(zsd2, 2);
 }
 
-// Zależność fizyczna pętli Zs: Zs paczkomatu zawsze > Zs przyłącza
 function walidujImpedancjeZs() {
   przeliczPunkt9();
   const zsm2 = toN(document.getElementById("p9_zsm_2").value);
@@ -595,18 +541,14 @@ function obliczUziemienie() {
 }
 
 function aiUzupelnijWszystko() {
-  // Pkt 2: Unikalne napięcie sieciowe
   const losoweU = 227.4 + (Math.random() * 9.8);
   document.getElementById("napiecie").value = toS(losoweU, 1);
 
-  // Środowisko
   document.getElementById("temp").value = toS(16.5 + (Math.random() * 11.2), 1);
   document.getElementById("wilg").value = toS(44.0 + (Math.random() * 18.5), 1);
 
-  // Pkt 5: Ciągłość PE
   aiGenerujPE();
 
-  // Pkt 6: Uziemienie
   const bazaRx = 5.60 + (Math.random() * 2.80);
   const u1 = bazaRx + (Math.random() * 0.08 - 0.04);
   const u2 = bazaRx + (Math.random() * 0.08 - 0.04);
@@ -616,17 +558,14 @@ function aiUzupelnijWszystko() {
   document.getElementById("u3").value = toS(u3, 2);
   obliczUziemienie();
 
-  // Pkt 7: RCD Maszyna
   document.getElementById("rcd_m_tx5").value = Math.floor(6 + Math.random() * 4);
   document.getElementById("rcd_m_tx1").value = Math.floor(15 + Math.random() * 7);
   document.getElementById("rcd_m_i").value = toS(16.8 + (Math.random() * 2.6), 1);
 
-  // Pkt 8: RCD Przyłącze
   document.getElementById("rcd_p_tx5").value = Math.floor(14 + Math.random() * 5);
   document.getElementById("rcd_p_tx1").value = Math.floor(21 + Math.random() * 7);
   document.getElementById("rcd_p_i").value = toS(20.3 + (Math.random() * 2.5), 1);
 
-  // Pkt 9: Zs z zachowaniem zależności kabla
   przeliczPunkt9();
   const zsPrzylacze = 0.95 + (Math.random() * 0.42);
   const oporKabla = 0.14 + (Math.random() * 0.22);
@@ -646,7 +585,7 @@ function aiGenerujPE() {
   }
 }
 
-// INICJALIZACJA I PODGLĄD PDF
+// WYSIWYG & INICJALIZACJA
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getAsset("szablon_pdf");
@@ -673,7 +612,6 @@ async function loadTemplate() {
   resizeSigCanvas();
   przeliczPunkt9();
 
-  // Nasłuchiwanie pól matematycznych
   document.getElementById("napiecie").addEventListener("input", () => {
     walidujNormy();
     przeliczPunkt9();
@@ -831,14 +769,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v18_stable", JSON.stringify(matryca));
-  alert("✅ Matryca (wartości i pozycje skreśleń) została trwale zapisana!");
+  localStorage.setItem("matryca_paczkomat_v19", JSON.stringify(matryca));
+  alert("✅ Matryca została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v18_stable");
+    localStorage.removeItem("matryca_paczkomat_v19");
     renderPage(currentPage);
   }
 }
@@ -874,7 +812,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF
+// 100% BEZPIECZNE GENEROWANIE DOKUMENTU PDF
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -894,14 +832,14 @@ async function generujWydrukPDF() {
     let customFont = null;
     let uzytoHelvetiki = false;
 
-    // Bezpieczne ładowanie czcionki bez wyrzucania błędu buffer length
+    // Bezpieczne wczytanie czcionki odręcznej
     try {
       const fontBuffer = await getHandwritingFontBytes();
       if (fontBuffer) {
         customFont = await pdfDoc.embedFont(fontBuffer);
       }
     } catch (fontErr) {
-      console.warn("Plik czcionka.ttf nie jest czystym TrueType. Używam fontu awaryjnego:", fontErr);
+      console.warn("Nie udało się osadzić czcionka.ttf:", fontErr);
     }
 
     if (!customFont) {
@@ -934,9 +872,9 @@ async function generujWydrukPDF() {
       });
     };
 
-    const maTrwalyPodpis = localStorage.getItem("trwaly_podpis_png") !== null;
+    // 1. Nanoszenie wartości liczbowych oraz ruchomych skreśleń
+    const zapisanyPodpis = localStorage.getItem("trwaly_podpis_png");
 
-    // 1. Nanoszenie wartości oraz ruchomych skreśleń
     for (const [id, item] of Object.entries(matryca)) {
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
@@ -949,37 +887,30 @@ async function generujWydrukPDF() {
         if (el) val = el.value;
       }
       
-      if (id === "podpis" && maTrwalyPodpis) continue;
+      // Jeśli mamy podpis graficzny, pomijamy tekst "Szymon Kacprzak"
+      if (id === "podpis" && zapisanyPodpis) continue;
 
       if (val) {
         draw(item.page, val, item.x, item.y, item.fsize);
       }
     }
 
-    // 2. Naniesienie odręcznego podpisu w polu "Szymon Kacprzak"
-    if (maTrwalyPodpis) {
-      const skadrowany = pobierzSkadrowanyPodpis();
-      if (skadrowany) {
-        const sigImage = await pdfDoc.embedPng(skadrowany.dataUrl);
+    // 2. Naniesienie odręcznego podpisu z pamięci
+    if (zapisanyPodpis) {
+      try {
+        const sigImage = await pdfDoc.embedPng(zapisanyPodpis);
         const p6 = pages[5];
         const h6 = p6.getSize().height;
         const podCoords = matryca["podpis"] || { x: 104, y: 435 };
 
-        const maxW = 95;
-        const maxH = 28;
-        let w = maxW;
-        let h = w / skadrowany.aspect;
-        if (h > maxH) {
-          h = maxH;
-          w = h * skadrowany.aspect;
-        }
-
         p6.drawImage(sigImage, {
           x: podCoords.x - 12,
-          y: h6 - podCoords.y - (h / 2),
-          width: w,
-          height: h
+          y: h6 - podCoords.y - 14,
+          width: 85,
+          height: 28
         });
+      } catch (sigErr) {
+        console.warn("Błąd osadzania podpisu PNG:", sigErr);
       }
     }
 
@@ -993,7 +924,8 @@ async function generujWydrukPDF() {
     zapiszDoHistorii();
 
   } catch (err) {
-    alert("Błąd: " + err.message);
+    alert("Błąd generowania PDF: " + err.message);
+    console.error(err);
   } finally {
     btn.innerText = "📄 Pobierz PDF";
     btn.disabled = false;
