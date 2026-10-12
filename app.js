@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v29_free_resize";
+const DB_NAME = "ProtokolantDB_A2_v30_perfect_fit";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// MATRYCA WSPÓŁRZĘDNYCH
+// MATRYCA WSPÓŁRZĘDNYCH ZE SKORYGOWANYM POŁOŻENIEM BLOKU W GÓRNEJ KRATCE
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -128,12 +128,12 @@ const bazowaMatryca = {
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-  // Strona 6: Cały blok tabeli podpisu
+  // Strona 6: Skreślenie i idealnie dopasowany blok w górnej kratce
   "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true},
-  "tabela_podpis":{"page":6,"x":40,"y":410,"width":515,"height":80,"isFullImageBlock":true}
+  "tabela_podpis":{"page":6,"x":28,"y":180,"width":538,"height":82,"isFullImageBlock":true}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v29")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v30")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -142,7 +142,7 @@ let activeBoxId = null;
 let currentNudgeStep = 1;
 let cachedBlockBytes = null;
 
-// WCZYTANIE BLOK_PODPISU.PNG
+// WCZYTANIE PLIKU BLOK_PODPISU.PNG
 async function getBlockBytes() {
   if (cachedBlockBytes) return cachedBlockBytes;
   try {
@@ -583,7 +583,7 @@ async function renderPage(num) {
   renderDraggableTags(num);
 }
 
-// RENDEROWANIE KAFELKÓW I UCHWYTÓW SKALOWANIA W KAŻDĄ STRONĘ
+// RENDEROWANIE ELEMENTÓW
 function renderDraggableTags(num) {
   const layer = document.getElementById("dragLayer");
   layer.innerHTML = "";
@@ -615,11 +615,12 @@ function renderDraggableTags(num) {
       handle.addEventListener('pointerdown', (e) => startResizeStrike(e, id));
 
     } else if (item.isFullImageBlock) {
-      // Pełny blok tabeli z uchwytem skalowania w prawym dolnym rogu
-      const wPx = (item.width || 515) * currentScale;
-      const hPx = (item.height || 80) * currentScale;
+      // Wyrównanie od lewej krawędzi górnej (top-left) identycznie jak w PDF
+      const wPx = (item.width || 538) * currentScale;
+      const hPx = (item.height || 82) * currentScale;
       tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
       tag.style.padding = '0';
+      tag.style.transform = 'none';
       tag.style.background = 'rgba(99, 102, 241, 0.2)';
       tag.style.border = '2px dashed #4f46e5';
       tag.style.width = `${wPx}px`;
@@ -655,7 +656,6 @@ function renderDraggableTags(num) {
   }
 }
 
-// PŁYNNE SKALOWANIE BLOKU NAROŻNIKIEM W DOWOLNĄ STRONĘ
 function startResizeCorner(e, id) {
   e.stopPropagation();
   e.preventDefault();
@@ -664,8 +664,8 @@ function startResizeCorner(e, id) {
 
   const startX = e.clientX;
   const startY = e.clientY;
-  const initW = matryca[id].width || 515;
-  const initH = matryca[id].height || 80;
+  const initW = matryca[id].width || 538;
+  const initH = matryca[id].height || 82;
 
   function onPointerMove(ev) {
     ev.preventDefault();
@@ -766,8 +766,8 @@ function zmienRozmiarBloku(dw, dh) {
   if (!activeBoxId || !matryca[activeBoxId]) return;
   const item = matryca[activeBoxId];
   if (item.isFullImageBlock) {
-    item.width = Math.max(50, (item.width || 515) + dw);
-    item.height = Math.max(20, (item.height || 80) + dh);
+    item.width = Math.max(50, (item.width || 538) + dw);
+    item.height = Math.max(20, (item.height || 82) + dh);
     const tag = document.getElementById(`tag_${activeBoxId}`);
     if (tag) {
       tag.style.width = `${item.width * currentScale}px`;
@@ -812,7 +812,6 @@ function updateDpadStatus() {
   document.getElementById("dpadLabel").innerHTML = infoText;
   document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
 
-  // Dynamiczne przyciski skalowania w D-Padzie
   let scalePanel = document.getElementById("customScaleControlPanel");
   if (scalePanel) scalePanel.remove();
 
@@ -841,7 +840,6 @@ function updateDpadStatus() {
   }
 }
 
-// SKRÓTY KLAWISZOWE: STRZAŁKI DO PRZESUWANIA, PLUS/MINUS DO SKALOWANIA
 window.addEventListener('keydown', (e) => {
   if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
   if (!activeBoxId || !matryca[activeBoxId]) return;
@@ -853,8 +851,8 @@ window.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0, krok); }
   else if (e.key === '+' || e.key === '=') { 
     e.preventDefault(); 
-    if (e.shiftKey) zmienRozmiarBloku(0, 4); // sama wysokość
-    else zmienRozmiarBloku(6, 3); // proporcjonalnie
+    if (e.shiftKey) zmienRozmiarBloku(0, 4);
+    else zmienRozmiarBloku(6, 3);
   }
   else if (e.key === '-' || e.key === '_') { 
     e.preventDefault(); 
@@ -865,14 +863,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v29", JSON.stringify(matryca));
-  alert("✅ Matryca (współrzędne i skala tabeli podpisu) została zapisana!");
+  localStorage.setItem("matryca_paczkomat_v30", JSON.stringify(matryca));
+  alert("✅ Matryca (dokładna pozycja tabeli) została zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v29");
+    localStorage.removeItem("matryca_paczkomat_v30");
     renderPage(currentPage);
   }
 }
@@ -908,7 +906,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF Z DOKŁADNĄ SKALĄ I POZYCJĄ
+// GENEROWANIE DOKUMENTU PDF Z DOKŁADNYM ODWZOROWANIEM POZYCJI 1:1
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -967,15 +965,16 @@ async function generujWydrukPDF() {
       });
     };
 
-    // 1. Wypalenie całego okna tabeli podpisu z zachowaniem ustawionej szerokości i wysokości
+    // 1. WYPALENIE CAŁEGO BLOKU TABELI W GÓRNEJ KRATCE (MATEMATYKA 1:1)
     const blockBytes = await getBlockBytes();
     if (blockBytes) {
       try {
         const blockImage = await pdfDoc.embedPng(blockBytes);
         const p6 = pages[5];
         const h6 = p6.getSize().height;
-        const b = matryca["tabela_podpis"] || { x: 40, y: 410, width: 515, height: 80 };
+        const b = matryca["tabela_podpis"] || { x: 28, y: 180, width: 538, height: 82 };
 
+        // Obliczenie lewego górnego rogu dokładnie jak w widoku DOM
         p6.drawImage(blockImage, {
           x: b.x,
           y: h6 - b.y - b.height,
