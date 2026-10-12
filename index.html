@@ -11,9 +11,10 @@
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
+  <!-- Ładowanie stabilnej czcionki odręcznej z wyraźnym daszkiem przy cyfrze 1 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -22,7 +23,7 @@
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            hand: ['"Kalam"', 'cursive']
+            hand: ['"Patrick Hand"', 'cursive']
           }
         }
       }
@@ -51,13 +52,13 @@
       user-select: none;
       touch-action: none;
       border: 1.5px dashed rgba(99, 102, 241, 0.75);
-      background: rgba(238, 242, 255, 0.94);
+      background: rgba(238, 242, 255, 0.96);
       border-radius: 4px;
       padding: 1px 6px;
       white-space: nowrap;
       line-height: 1.1;
       transform: translate(0, -50%);
-      font-family: 'Kalam', cursive;
+      font-family: 'Patrick Hand', cursive !important;
       color: #0f2b6b;
       font-weight: 700;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
@@ -79,7 +80,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased pb-24 sm:pb-8">
 
-  <!-- Header -->
   <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
@@ -94,7 +94,6 @@
       </div>
     </div>
 
-    <!-- Zakładki -->
     <div class="hidden sm:flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs">
       <button onclick="switchTab('form')" id="tabBtnForm" class="px-3.5 py-1.5 rounded-xl font-bold bg-indigo-600 text-white shadow">
         📋 Dane & AI
@@ -107,7 +106,6 @@
       </button>
     </div>
 
-    <!-- Akcje -->
     <div class="flex items-center gap-2">
       <button onclick="aiUzupelnijWszystko()" class="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition">
         <span>✨</span> AI Dopełnij
@@ -118,7 +116,6 @@
     </div>
   </header>
 
-  <!-- Pasek narzędziowy -->
   <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -140,7 +137,6 @@
     </div>
   </div>
 
-  <!-- Toast AI -->
   <div id="aiLiveToast" class="hidden fixed top-16 right-4 z-50 glass-panel border border-indigo-500/50 p-3 rounded-2xl shadow-2xl text-xs max-w-xs transition-all">
     <div class="flex items-center gap-2 text-indigo-400 font-bold mb-1">
       <span id="toastIcon">✨</span> <span id="toastTitle">Asystent</span>
@@ -460,7 +456,6 @@
     </div>
   </div>
 
-  <!-- Pasek dolny mobile -->
   <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-slate-800/80 px-6 py-2.5 flex justify-around">
     <button onclick="switchTab('form')" id="mTabForm" class="flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]">
       <span class="text-base">📋</span> Dane & AI
@@ -470,7 +465,6 @@
     </button>
   </div>
 
-  <!-- Joystick D-Pad -->
   <div id="mobileDpad" class="hidden fixed bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3">
     <div>
       <div class="text-[10px] text-slate-400 font-mono" id="dpadLabel">Wybrane: brak</div>
