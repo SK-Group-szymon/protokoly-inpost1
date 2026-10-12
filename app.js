@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v17_dynamic_math";
+const DB_NAME = "ProtokolantDB_A2_v18_stable";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -135,7 +135,7 @@ const bazowaMatryca = {
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v17_dynamic_math")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v18_stable")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -188,9 +188,9 @@ async function wgrajWlasnaCzcionke(file) {
   }
 }
 
-// POBIERANIE CZCIONKI ODRĘCZNEJ (NAJPIERW GITHUB, POTEM BAZA, POTEM CDN)
+// BEZPIECZNE POBIERANIE CZCIONKI (GITHUB -> INDEXEDDB -> CDN)
 async function getHandwritingFontBytes() {
-  // 1. Priorytet: czysty plik czcionka.ttf prosto z GitHuba
+  // 1. Sprawdź czysty plik czcionka.ttf prosto z GitHuba
   try {
     const res = await fetch("czcionka.ttf?v=" + Date.now(), { cache: "no-store" });
     if (res.ok) {
@@ -200,10 +200,10 @@ async function getHandwritingFontBytes() {
       }
     }
   } catch (err) {
-    console.warn("Brak lub błąd czcionka.ttf z GitHuba:", err);
+    console.warn("Brak czcionka.ttf na GitHubie:", err);
   }
 
-  // 2. Jeśli brak na GitHubie, sprawdź czcionkę wgraną ręcznie do pamięci
+  // 2. Sprawdź pamięć podręczną (IndexedDB)
   try {
     const savedFont = await getAsset("reczny_font_ttf");
     if (savedFont && savedFont.byteLength > 20000) {
@@ -211,7 +211,7 @@ async function getHandwritingFontBytes() {
     }
   } catch (_) {}
 
-  // 3. Zapasowe, sprawdzone źródło fontu Caveat-Bold TrueType
+  // 3. Fallback: oficjalny statyczny Caveat-Bold.ttf
   try {
     const fallbackRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf");
     if (fallbackRes.ok) {
@@ -222,25 +222,7 @@ async function getHandwritingFontBytes() {
   return null;
 }
 
-  const fallbackUrls = [
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf",
-    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf"
-  ];
-
-  for (const url of fallbackUrls) {
-    try {
-      const res = await fetch(url);
-      if (res.ok) {
-        fontBytes = await res.arrayBuffer();
-        await storeAsset("reczny_font_ttf", fontBytes);
-        return fontBytes;
-      }
-    } catch (_) {}
-  }
-  return null;
-}
-
-// OCR
+// OCR ZE ZDJĘCIA TABLICZKI
 document.getElementById("ocrInput").addEventListener("change", async (e) => {
   const f = e.target.files[0];
   if (f) przetworzZdjecieTabliczki(f);
@@ -352,7 +334,7 @@ function pokazToast(tytul, tresc) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-// SIGNATURE PAD (ZAPIS W LOCALSTORAGE)
+// SIGNATURE PAD (ZAPIS W PAMIĘCI URZĄDZENIA)
 const sigCanvas = document.getElementById("sigCanvas");
 const sigCtx = sigCanvas.getContext("2d");
 let rysuje = false;
@@ -534,7 +516,7 @@ function wyczyscCalaHistorie() {
 }
 
 // ========================================================
-// MATEMATYKA PKT 9, KALKULACJE I REALNE POMIARY TERENOWE
+// MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
 // ========================================================
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
@@ -545,7 +527,7 @@ function usunPolskieZnaki(tekst) {
   return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
 }
 
-// Dynamiczne wyliczanie Zs dopuszczalnej z prawa Ohma: Zsd = U0 / (k * In)
+// Dynamiczne obliczanie Zsd = U0 / (k * In)
 function przeliczPunkt9() {
   const u0 = toN(document.getElementById("napiecie").value) || 230.0;
 
@@ -566,7 +548,7 @@ function przeliczPunkt9() {
   document.getElementById("p9_zsd_2").value = toS(zsd2, 2);
 }
 
-// Zależność fizyczna: Paczkomat ma zawsze odrobinę większe Zs niż przyłącze
+// Zależność fizyczna pętli Zs: Zs paczkomatu zawsze > Zs przyłącza
 function walidujImpedancjeZs() {
   przeliczPunkt9();
   const zsm2 = toN(document.getElementById("p9_zsm_2").value);
@@ -613,7 +595,7 @@ function obliczUziemienie() {
 }
 
 function aiUzupelnijWszystko() {
-  // Pkt 2: Unikalne napięcie sieci
+  // Pkt 2: Unikalne napięcie sieciowe
   const losoweU = 227.4 + (Math.random() * 9.8);
   document.getElementById("napiecie").value = toS(losoweU, 1);
 
@@ -624,7 +606,7 @@ function aiUzupelnijWszystko() {
   // Pkt 5: Ciągłość PE
   aiGenerujPE();
 
-  // Pkt 6: Uziemienie (3 pomiary)
+  // Pkt 6: Uziemienie
   const bazaRx = 5.60 + (Math.random() * 2.80);
   const u1 = bazaRx + (Math.random() * 0.08 - 0.04);
   const u2 = bazaRx + (Math.random() * 0.08 - 0.04);
@@ -644,7 +626,7 @@ function aiUzupelnijWszystko() {
   document.getElementById("rcd_p_tx1").value = Math.floor(21 + Math.random() * 7);
   document.getElementById("rcd_p_i").value = toS(20.3 + (Math.random() * 2.5), 1);
 
-  // Pkt 9: Zs powiązane fizycznie
+  // Pkt 9: Zs z zachowaniem zależności kabla
   przeliczPunkt9();
   const zsPrzylacze = 0.95 + (Math.random() * 0.42);
   const oporKabla = 0.14 + (Math.random() * 0.22);
@@ -664,7 +646,7 @@ function aiGenerujPE() {
   }
 }
 
-// PODGLĄD PDF & DRAG & DROP
+// INICJALIZACJA I PODGLĄD PDF
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getAsset("szablon_pdf");
@@ -691,7 +673,7 @@ async function loadTemplate() {
   resizeSigCanvas();
   przeliczPunkt9();
 
-  // Nasłuchiwanie pól do natychmiastowych obliczeń matematycznych
+  // Nasłuchiwanie pól matematycznych
   document.getElementById("napiecie").addEventListener("input", () => {
     walidujNormy();
     przeliczPunkt9();
@@ -849,14 +831,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v17_dynamic_math", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v18_stable", JSON.stringify(matryca));
   alert("✅ Matryca (wartości i pozycje skreśleń) została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v17_dynamic_math");
+    localStorage.removeItem("matryca_paczkomat_v18_stable");
     renderPage(currentPage);
   }
 }
@@ -892,7 +874,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE 100% AUTONOMICZNEGO DOKUMENTU PDF
+// GENEROWANIE DOKUMENTU PDF
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -912,13 +894,14 @@ async function generujWydrukPDF() {
     let customFont = null;
     let uzytoHelvetiki = false;
 
-    const fontBuffer = await getHandwritingFontBytes();
-    if (fontBuffer) {
-      try {
+    // Bezpieczne ładowanie czcionki bez wyrzucania błędu buffer length
+    try {
+      const fontBuffer = await getHandwritingFontBytes();
+      if (fontBuffer) {
         customFont = await pdfDoc.embedFont(fontBuffer);
-      } catch (e) {
-        console.error("Błąd osadzania fontu:", e);
       }
+    } catch (fontErr) {
+      console.warn("Plik czcionka.ttf nie jest czystym TrueType. Używam fontu awaryjnego:", fontErr);
     }
 
     if (!customFont) {
