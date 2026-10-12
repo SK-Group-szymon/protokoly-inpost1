@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v19_bulletproof";
+const DB_NAME = "ProtokolantDB_A2_v20_kalam";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// PEŁNA MATRYCA WSPÓŁRZĘDNYCH
+// PEŁNA MATRYCA WSPÓŁRZĘDNYCH (WARTOŚCI + SKREŚLENIA)
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -129,13 +129,12 @@ const bazowaMatryca = {
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
   // Strona 6
-  "podpis":{"page":6,"x":104,"y":435,"fsize":13,"txt":"Szymon Kacprzak"},
   "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
   "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"},
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v19")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v20")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -176,44 +175,26 @@ function zapiszProfilMiernika() {
   localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
 }
 
-// OBSŁUGA CZCIONKI ODRĘCZNEJ
-async function wgrajWlasnaCzcionke(file) {
-  if (!file) return;
-  try {
-    const buffer = await file.arrayBuffer();
-    await storeAsset("reczny_font_ttf", buffer);
-    pokazToast("🔤 Czcionka zapisana", "Wgrano plik czcionki! PDF będzie wypalany tym pismem.");
-  } catch (err) {
-    console.error("Błąd zapisu czcionki:", err);
-  }
-}
-
-// POBIERANIE CZCIONKI ODRĘCZNEJ
+// STABILNE POBIERANIE CZCIONKI ODRĘCZNEJ KALAM (BEZ BŁĘDU BUFORA)
 async function getHandwritingFontBytes() {
-  try {
-    const res = await fetch("czcionka.ttf?v=" + Date.now(), { cache: "no-store" });
-    if (res.ok) {
-      const buffer = await res.arrayBuffer();
-      if (buffer && buffer.byteLength > 20000) {
-        return buffer;
+  // Sprawdzone bezpośrednie adresy do statycznego pliku Kalam-Bold.ttf
+  const urls = [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/kalam/Kalam-Bold.ttf",
+    "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf",
+    "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf"
+  ];
+
+  for (const u of urls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        if (buf && buf.byteLength > 30000) {
+          return buf;
+        }
       }
-    }
-  } catch (_) {}
-
-  try {
-    const savedFont = await getAsset("reczny_font_ttf");
-    if (savedFont && savedFont.byteLength > 20000) {
-      return savedFont;
-    }
-  } catch (_) {}
-
-  try {
-    const fallbackRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf");
-    if (fallbackRes.ok) {
-      return await fallbackRes.arrayBuffer();
-    }
-  } catch (_) {}
-
+    } catch (_) {}
+  }
   return null;
 }
 
@@ -253,7 +234,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// GŁOS
+// ASYSTENT GŁOSOWY
 let recognition = null;
 let czyNagrywa = false;
 
@@ -327,69 +308,6 @@ function pokazToast(tytul, tresc) {
   document.getElementById("toastMessage").innerText = tresc;
   toast.classList.remove("hidden");
   setTimeout(() => toast.classList.add("hidden"), 3500);
-}
-
-// SIGNATURE PAD
-const sigCanvas = document.getElementById("sigCanvas");
-const sigCtx = sigCanvas.getContext("2d");
-let rysuje = false;
-
-function resizeSigCanvas() {
-  const rect = sigCanvas.getBoundingClientRect();
-  sigCanvas.width = rect.width * 2;
-  sigCanvas.height = rect.height * 2;
-  sigCtx.scale(2, 2);
-  sigCtx.lineWidth = 2.4;
-  sigCtx.lineCap = "round";
-  sigCtx.strokeStyle = "#0f2b6b";
-  wczytajZapisanyPodpis();
-}
-
-function wczytajZapisanyPodpis() {
-  const zapisany = localStorage.getItem("trwaly_podpis_png");
-  if (zapisany) {
-    const img = new Image();
-    img.onload = () => {
-      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-      sigCtx.drawImage(img, 0, 0, sigCanvas.width / 2, sigCanvas.height / 2);
-    };
-    img.src = zapisany;
-  }
-}
-
-function getSigPos(e) {
-  const rect = sigCanvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return { x: clientX - rect.left, y: clientY - rect.top };
-}
-
-sigCanvas.addEventListener("pointerdown", (e) => {
-  rysuje = true;
-  const pos = getSigPos(e);
-  sigCtx.beginPath();
-  sigCtx.moveTo(pos.x, pos.y);
-});
-
-sigCanvas.addEventListener("pointermove", (e) => {
-  if (!rysuje) return;
-  const pos = getSigPos(e);
-  sigCtx.lineTo(pos.x, pos.y);
-  sigCtx.stroke();
-});
-
-window.addEventListener("pointerup", () => {
-  if (rysuje) {
-    rysuje = false;
-    localStorage.setItem("trwaly_podpis_png", sigCanvas.toDataURL("image/png"));
-    pokazToast("✍️ Podpis", "Zapisano podpis na stałe!");
-  }
-});
-
-function wyczyscPodpis() {
-  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-  localStorage.removeItem("trwaly_podpis_png");
-  pokazToast("🗑️ Podpis", "Usunięto podpis z pamięci.");
 }
 
 // HISTORIA
@@ -467,7 +385,7 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
+// MATEMATYKA I KALKULACJE
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -585,7 +503,7 @@ function aiGenerujPE() {
   }
 }
 
-// WYSIWYG & INICJALIZACJA
+// INICJALIZACJA I PODGLĄD PDF
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getAsset("szablon_pdf");
@@ -600,8 +518,6 @@ async function loadTemplate() {
     } catch (_) {}
   }
 
-  getHandwritingFontBytes();
-
   if (loadedPdfBytes) {
     document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
     initPdfPreview();
@@ -609,7 +525,6 @@ async function loadTemplate() {
     document.getElementById("szablonStatusText").innerHTML = "Wskaż plik <strong>szablon.pdf</strong>:";
   }
   odswiezLicznikHistorii();
-  resizeSigCanvas();
   przeliczPunkt9();
 
   document.getElementById("napiecie").addEventListener("input", () => {
@@ -769,14 +684,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v19", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v20", JSON.stringify(matryca));
   alert("✅ Matryca została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v19");
+    localStorage.removeItem("matryca_paczkomat_v20");
     renderPage(currentPage);
   }
 }
@@ -812,7 +727,7 @@ function switchTab(tab) {
   }
 }
 
-// 100% BEZPIECZNE GENEROWANIE DOKUMENTU PDF
+// GENEROWANIE DOKUMENTU PDF
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -832,14 +747,14 @@ async function generujWydrukPDF() {
     let customFont = null;
     let uzytoHelvetiki = false;
 
-    // Bezpieczne wczytanie czcionki odręcznej
+    // Stabilne osadzanie czcionki Kalam z zabezpieczeniem try/catch
     try {
       const fontBuffer = await getHandwritingFontBytes();
       if (fontBuffer) {
         customFont = await pdfDoc.embedFont(fontBuffer);
       }
     } catch (fontErr) {
-      console.warn("Nie udało się osadzić czcionka.ttf:", fontErr);
+      console.warn("Błąd parsowania fontu:", fontErr);
     }
 
     if (!customFont) {
@@ -872,9 +787,7 @@ async function generujWydrukPDF() {
       });
     };
 
-    // 1. Nanoszenie wartości liczbowych oraz ruchomych skreśleń
-    const zapisanyPodpis = localStorage.getItem("trwaly_podpis_png");
-
+    // 1. Nanoszenie wartości liczbowych oraz skreśleń
     for (const [id, item] of Object.entries(matryca)) {
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
@@ -886,31 +799,9 @@ async function generujWydrukPDF() {
         const el = document.getElementById(id);
         if (el) val = el.value;
       }
-      
-      // Jeśli mamy podpis graficzny, pomijamy tekst "Szymon Kacprzak"
-      if (id === "podpis" && zapisanyPodpis) continue;
 
       if (val) {
         draw(item.page, val, item.x, item.y, item.fsize);
-      }
-    }
-
-    // 2. Naniesienie odręcznego podpisu z pamięci
-    if (zapisanyPodpis) {
-      try {
-        const sigImage = await pdfDoc.embedPng(zapisanyPodpis);
-        const p6 = pages[5];
-        const h6 = p6.getSize().height;
-        const podCoords = matryca["podpis"] || { x: 104, y: 435 };
-
-        p6.drawImage(sigImage, {
-          x: podCoords.x - 12,
-          y: h6 - podCoords.y - 14,
-          width: 85,
-          height: 28
-        });
-      } catch (sigErr) {
-        console.warn("Błąd osadzania podpisu PNG:", sigErr);
       }
     }
 
