@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v23_real_lines";
+const DB_NAME = "ProtokolantDB_A2_v24_exact_strikes";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,9 +15,8 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// MATRYCA WSPÓŁRZĘDNYCH Z PRECYZYJNĄ DŁUGOŚCIĄ SKREŚLEŃ
+// SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH I DŁUGOŚCI SKREŚLEŃ
 const bazowaMatryca = {
-  // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
   "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
   "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
@@ -40,11 +39,10 @@ const bazowaMatryca = {
   "typ_in_prz":{"page":1,"x":365,"y":688,"fsize":11,"txt":"B"},
   "din_prz":{"page":1,"x":304,"y":720,"fsize":11,"txt":"0,03"},
   "typ_din_prz":{"page":1,"x":367,"y":720,"fsize":11,"txt":"AC"},
-  "skr_p1_okresowego":{"page":1,"x":148,"y":108,"width":84,"isStrike":true},
-  "skr_p1_indoor":{"page":1,"x":337,"y":294,"width":165,"isStrike":true},
-  "skr_p1_selektywnosc":{"page":1,"x":247,"y":760,"width":26,"isStrike":true},
+  "skr_p1_okresowego":{"page":1,"x":149,"y":108,"width":85,"isStrike":true},
+  "skr_p1_indoor":{"page":1,"x":337,"y":294,"width":137,"isStrike":true},
+  "skr_p1_selektywnosc":{"page":1,"x":248,"y":758,"width":26,"isStrike":true},
 
-  // Strona 2
   "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
   "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
   "iz1":{"page":2,"x":222,"y":287,"fsize":11},
@@ -64,22 +62,21 @@ const bazowaMatryca = {
   "pe_5":{"page":2,"x":406,"y":608,"fsize":11},
   "pe_6":{"page":2,"x":405,"y":625,"fsize":11},
   "pe_7":{"page":2,"x":404,"y":641,"fsize":11},
-  "skr_p2_napiecie":{"page":2,"x":298,"y":163,"width":26,"isStrike":true},
-  "skr_p2_iz1":{"page":2,"x":471,"y":287,"width":60,"isStrike":true},
+  "skr_p2_napiecie":{"page":2,"x":303,"y":163,"width":26,"isStrike":true},
+  "skr_p2_iz1":{"page":2,"x":474,"y":287,"width":60,"isStrike":true},
   "skr_p2_iz2":{"page":2,"x":473,"y":302,"width":60,"isStrike":true},
   "skr_p2_iz3":{"page":2,"x":473,"y":320,"width":60,"isStrike":true},
   "skr_p2_pe1":{"page":2,"x":486,"y":500,"width":26,"isStrike":true},
   "skr_p2_pe2":{"page":2,"x":491,"y":530,"width":26,"isStrike":true},
-  "skr_p2_pe3":{"page":2,"x":483,"y":556,"width":26,"isStrike":true},
+  "skr_p2_pe3":{"page":2,"x":489,"y":555,"width":26,"isStrike":true},
   "skr_p2_pe4":{"page":2,"x":483,"y":574,"width":26,"isStrike":true},
   "skr_p2_pe5":{"page":2,"x":486,"y":590,"width":26,"isStrike":true},
   "skr_p2_pe6":{"page":2,"x":487,"y":606,"width":26,"isStrike":true},
   "skr_p2_pe7":{"page":2,"x":486,"y":623,"width":26,"isStrike":true},
   "skr_p2_pe8":{"page":2,"x":487,"y":641,"width":26,"isStrike":true},
-  "skr_p2_ogledziny":{"page":2,"x":448,"y":670,"width":72,"isStrike":true},
-  "skr_p2_mocowanie":{"page":2,"x":293,"y":685,"width":84,"isStrike":true},
+  "skr_p2_ogledziny":{"page":2,"x":456,"y":669,"width":64,"isStrike":true},
+  "skr_p2_mocowanie":{"page":2,"x":308,"y":684,"width":69,"isStrike":true},
 
-  // Strona 3
   "u1":{"page":3,"x":111,"y":197,"fsize":11},
   "u2":{"page":3,"x":112,"y":216,"fsize":11},
   "u3":{"page":3,"x":114,"y":232,"fsize":11},
@@ -91,16 +88,15 @@ const bazowaMatryca = {
   "rcd_m_tx1":{"page":3,"x":385,"y":679,"fsize":11},
   "rcd_m_i":{"page":3,"x":274,"y":693,"fsize":11},
   "rcd_m_ub":{"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
-  "skr_p3_uziemienie":{"page":3,"x":488,"y":208,"width":26,"isStrike":true},
-  "skr_p3_polaczenie_gora":{"page":3,"x":488,"y":370,"width":26,"isStrike":true},
-  "skr_p3_ogledziny_rcd":{"page":3,"x":447,"y":591,"width":72,"isStrike":true},
-  "skr_p3_test_rcd":{"page":3,"x":454,"y":611,"width":65,"isStrike":true},
-  "skr_p3_wylaczyl":{"page":3,"x":487,"y":632,"width":26,"isStrike":true},
-  "skr_p3_50prc":{"page":3,"x":137,"y":747,"width":26,"isStrike":true},
-  "skr_p3_nie_jest":{"page":3,"x":178,"y":761,"width":55,"isStrike":true},
-  "skr_p3_nie_moze":{"page":3,"x":297,"y":762,"width":58,"isStrike":true},
+  "skr_p3_uziemienie":{"page":3,"x":494,"y":208,"width":26,"isStrike":true},
+  "skr_p3_polaczenie_gora":{"page":3,"x":362,"y":512,"width":22,"isStrike":true},
+  "skr_p3_ogledziny_rcd":{"page":3,"x":452,"y":591,"width":72,"isStrike":true},
+  "skr_p3_test_rcd":{"page":3,"x":462,"y":611,"width":65,"isStrike":true},
+  "skr_p3_wylaczyl":{"page":3,"x":499,"y":632,"width":26,"isStrike":true},
+  "skr_p3_50prc":{"page":3,"x":142,"y":747,"width":26,"isStrike":true},
+  "skr_p3_nie_jest":{"page":3,"x":181,"y":761,"width":55,"isStrike":true},
+  "skr_p3_nie_moze":{"page":3,"x":310,"y":761,"width":54,"isStrike":true},
 
-  // Strona 4
   "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
   "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
   "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
@@ -115,26 +111,24 @@ const bazowaMatryca = {
   "p9_ia_2":{"page":4,"x":260,"y":520,"fsize":11},
   "p9_zsm_2":{"page":4,"x":365,"y":522,"fsize":11},
   "p9_zsd_2":{"page":4,"x":420,"y":520,"fsize":11},
-  "skr_p4_ogledziny_rcd":{"page":4,"x":442,"y":129,"width":72,"isStrike":true},
-  "skr_p4_test_rcd":{"page":4,"x":450,"y":149,"width":65,"isStrike":true},
-  "skr_p4_wylaczyl":{"page":4,"x":489,"y":170,"width":26,"isStrike":true},
-  "skr_p4_50prc":{"page":4,"x":132,"y":284,"width":26,"isStrike":true},
-  "skr_p4_nie_jest":{"page":4,"x":167,"y":298,"width":55,"isStrike":true},
-  "skr_p4_nie_moze":{"page":4,"x":296,"y":299,"width":58,"isStrike":true},
-  "skr_p4_zs1":{"page":4,"x":499,"y":471,"width":26,"isStrike":true},
-  "skr_p4_zs2":{"page":4,"x":501,"y":519,"width":26,"isStrike":true},
+  "skr_p4_ogledziny_rcd":{"page":4,"x":452,"y":128,"width":72,"isStrike":true},
+  "skr_p4_test_rcd":{"page":4,"x":461,"y":149,"width":65,"isStrike":true},
+  "skr_p4_wylaczyl":{"page":4,"x":499,"y":168,"width":26,"isStrike":true},
+  "skr_p4_50prc":{"page":4,"x":143,"y":284,"width":26,"isStrike":true},
+  "skr_p4_nie_jest":{"page":4,"x":180,"y":298,"width":55,"isStrike":true},
+  "skr_p4_nie_moze":{"page":4,"x":307,"y":297,"width":58,"isStrike":true},
+  "skr_p4_zs1":{"page":4,"x":511,"y":471,"width":26,"isStrike":true},
+  "skr_p4_zs2":{"page":4,"x":508,"y":518,"width":26,"isStrike":true},
 
-  // Strona 5
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-  // Strona 6
   "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
   "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"},
-  "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":135,"isStrike":true}
+  "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v23")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v24")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -230,7 +224,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// GŁOS
+// ASYSTENT GŁOSOWY
 let recognition = null;
 let czyNagrywa = false;
 
@@ -580,7 +574,6 @@ function renderDraggableTags(num) {
     tag.id = `tag_${id}`;
 
     if (item.isStrike) {
-      // Prawdziwa linia 1:1 odpowiadająca wydrukowi PDF
       const wPx = (item.width || 30) * currentScale;
       tag.className = `drag-box strike-real-line ${id === activeBoxId ? 'selected' : ''}`;
       tag.style.padding = '0';
@@ -597,7 +590,6 @@ function renderDraggableTags(num) {
         <div class="resize-handle" style="position: absolute; right: -5px; top: 2px; width: 10px; height: 10px; background: #991b1b; border: 1.5px solid white; border-radius: 50%; cursor: ew-resize;"></div>
       `;
 
-      // Uchwyt zmiany długości
       const handle = tag.querySelector('.resize-handle');
       handle.addEventListener('pointerdown', (e) => startResizeStrike(e, id));
 
@@ -622,7 +614,6 @@ function renderDraggableTags(num) {
   }
 }
 
-// ZMIANA DŁUGOŚCI SKREŚLENIA MYSZKĄ LUB DOTYKIEM
 function startResizeStrike(e, id) {
   e.stopPropagation();
   e.preventDefault();
@@ -726,7 +717,6 @@ function updateDpadStatus() {
   document.getElementById("dpadLabel").innerHTML = infoText;
   document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
 
-  // Jeśli zaznaczono skreślenie, dodaj przyciski zmiany długości w joysticku
   let resizeBtns = document.getElementById("strikeResizePanel");
   if (!resizeBtns && isStr) {
     const p = document.createElement("div");
@@ -755,14 +745,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v23", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v24", JSON.stringify(matryca));
   alert("✅ Matryca została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v23");
+    localStorage.removeItem("matryca_paczkomat_v24");
     renderPage(currentPage);
   }
 }
@@ -798,7 +788,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF Z DOKŁADNĄ DŁUGOŚCIĄ LINII
+// GENEROWANIE DOKUMENTU PDF
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -857,7 +847,6 @@ async function generujWydrukPDF() {
       });
     };
 
-    // Nanoszenie wartości liczbowych oraz skreśleń
     for (const [id, item] of Object.entries(matryca)) {
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
