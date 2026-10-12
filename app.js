@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v20_kalam";
+const DB_NAME = "ProtokolantDB_A2_v21_final";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// PEŁNA MATRYCA WSPÓŁRZĘDNYCH (WARTOŚCI + SKREŚLENIA)
+// MATRYCA WSPÓŁRZĘDNYCH
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -134,7 +134,7 @@ const bazowaMatryca = {
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v20")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v21")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -175,13 +175,11 @@ function zapiszProfilMiernika() {
   localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
 }
 
-// STABILNE POBIERANIE CZCIONKI ODRĘCZNEJ KALAM (BEZ BŁĘDU BUFORA)
+// POBIERANIE CZCIONKI KALAM
 async function getHandwritingFontBytes() {
-  // Sprawdzone bezpośrednie adresy do statycznego pliku Kalam-Bold.ttf
   const urls = [
-    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/kalam/Kalam-Bold.ttf",
     "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf",
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf"
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/kalam/Kalam-Bold.ttf"
   ];
 
   for (const u of urls) {
@@ -189,7 +187,7 @@ async function getHandwritingFontBytes() {
       const res = await fetch(u);
       if (res.ok) {
         const buf = await res.arrayBuffer();
-        if (buf && buf.byteLength > 30000) {
+        if (buf && buf.byteLength > 40000) {
           return buf;
         }
       }
@@ -385,7 +383,7 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// MATEMATYKA I KALKULACJE
+// MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -684,14 +682,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v20", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v21", JSON.stringify(matryca));
   alert("✅ Matryca została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v20");
+    localStorage.removeItem("matryca_paczkomat_v21");
     renderPage(currentPage);
   }
 }
@@ -747,14 +745,13 @@ async function generujWydrukPDF() {
     let customFont = null;
     let uzytoHelvetiki = false;
 
-    // Stabilne osadzanie czcionki Kalam z zabezpieczeniem try/catch
     try {
       const fontBuffer = await getHandwritingFontBytes();
       if (fontBuffer) {
         customFont = await pdfDoc.embedFont(fontBuffer);
       }
     } catch (fontErr) {
-      console.warn("Błąd parsowania fontu:", fontErr);
+      console.warn("Błąd parsowania fontu Kalam:", fontErr);
     }
 
     if (!customFont) {
@@ -787,7 +784,7 @@ async function generujWydrukPDF() {
       });
     };
 
-    // 1. Nanoszenie wartości liczbowych oraz skreśleń
+    // Nanoszenie wartości liczbowych oraz skreśleń
     for (const [id, item] of Object.entries(matryca)) {
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
@@ -809,7 +806,8 @@ async function generujWydrukPDF() {
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `Protokol_${document.getElementById("nr_seryjny").value.replace(/[\/\\]/g, '_')}.pdf`;
+    const sn = document.getElementById("nr_seryjny").value.replace(/[\/\\]/g, '_');
+    link.download = `Protokol_${sn}.pdf`;
     link.click();
 
     zapiszDoHistorii();
