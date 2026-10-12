@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v16_rcd_fix";
+const DB_NAME = "ProtokolantDB_A2_v17_dynamic_math";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// PEŁNA MATRYCA WSPÓŁRZĘDNYCH ZE WSZYSTKIMI SKREŚLENIAMI RCD (STRONA 3)
+// PEŁNA MATRYCA WSPÓŁRZĘDNYCH (WARTOŚCI + SKREŚLENIA)
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -135,7 +135,7 @@ const bazowaMatryca = {
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v16")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v17_dynamic_math")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -176,12 +176,12 @@ function zapiszProfilMiernika() {
   localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
 }
 
-// OBSŁUGA WŁASNEJ CZCIONKI (.TTF)
+// OBSŁUGA CZCIONKI ODRĘCZNEJ
 async function wgrajWlasnaCzcionke(file) {
   if (!file) return;
   const buffer = await file.arrayBuffer();
   await storeAsset("reczny_font_ttf", buffer);
-  pokazToast("🔤 Czcionka zapisana", "Wgrano własną czcionkę! Od teraz PDF będzie generowany tym pismem.");
+  pokazToast("🔤 Czcionka zapisana", "Wgrano plik czcionki! PDF będzie wypalany tym pismem.");
 }
 
 async function getHandwritingFontBytes() {
@@ -251,7 +251,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// GŁOS
+// ASYSTENT GŁOSOWY
 let recognition = null;
 let czyNagrywa = false;
 
@@ -291,7 +291,11 @@ function parsujGlos(t) {
   pokazToast("🗣️ Mowa:", t);
   if (t.includes("napięcie") || t.includes("wolt")) {
     const num = t.match(/\d+[\.,]?\d*/);
-    if (num) { document.getElementById("napiecie").value = num[0].replace('.', ','); walidujNormy(); }
+    if (num) { 
+      document.getElementById("napiecie").value = num[0].replace('.', ','); 
+      walidujNormy(); 
+      przeliczPunkt9();
+    }
   } else if (t.includes("uziemienie") || t.includes("uziom")) {
     const num = t.match(/\d+[\.,]?\d*/);
     if (num) {
@@ -303,7 +307,8 @@ function parsujGlos(t) {
     const num = t.match(/\d+[\.,]?\d*/);
     if (num) {
       const v = num[0].replace('.', ',');
-      document.getElementById("p9_zsm_1").value = v; document.getElementById("p9_zsm_2").value = v;
+      document.getElementById("p9_zsm_2").value = v;
+      walidujImpedancjeZs();
     }
   } else if (t.includes("temperatura")) {
     const num = t.match(/\d+[\.,]?\d*/);
@@ -322,7 +327,7 @@ function pokazToast(tytul, tresc) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-// SIGNATURE PAD
+// SIGNATURE PAD (ZAPIS W LOCALSTORAGE)
 const sigCanvas = document.getElementById("sigCanvas");
 const sigCtx = sigCanvas.getContext("2d");
 let rysuje = false;
@@ -484,6 +489,7 @@ function wczytajZHistorii(id) {
     document.getElementById("typ_maszyny").value = item.typ_maszyny;
     document.getElementById("napiecie").value = item.napiecie;
     zamknijHistorie();
+    przeliczPunkt9();
     pokazToast("📋 Wczytano", `Przywrócono: ${item.nr_seryjny}`);
   }
 }
@@ -502,7 +508,9 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// KALKULACJE
+// ========================================================
+// MATEMATYKA PKT 9, KALKULACJE I REALNE POMIARY TERENOWE
+// ========================================================
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -510,6 +518,39 @@ function usunPolskieZnaki(tekst) {
   const mapa = { 'ą':'a', 'ć':'c', 'ę':'e', 'ł':'l', 'ń':'n', 'ó':'o', 'ś':'s', 'ź':'z', 'ż':'z',
                  'Ą':'A', 'Ć':'C', 'Ę':'E', 'Ł':'L', 'Ń':'N', 'Ó':'O', 'Ś':'S', 'Ź':'Z', 'Ż':'Z' };
   return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
+}
+
+// Dynamiczne wyliczanie Zs dopuszczalnej z prawa Ohma: Zsd = U0 / (k * In)
+function przeliczPunkt9() {
+  const u0 = toN(document.getElementById("napiecie").value) || 230.0;
+
+  // Wiersz 1: Paczkomat (B10, k=5)
+  const in1 = toN(document.getElementById("p9_in_1").value) || 10;
+  const k1 = toN(document.getElementById("p9_k_1").value) || 5;
+  const ia1 = in1 * k1;
+  document.getElementById("p9_ia_1").value = ia1;
+  const zsd1 = u0 / ia1;
+  document.getElementById("p9_zsd_1").value = toS(zsd1, 2);
+
+  // Wiersz 2: Przyłącze (B16, k=5)
+  const in2 = toN(document.getElementById("p9_in_2").value) || 16;
+  const k2 = toN(document.getElementById("p9_k_2").value) || 5;
+  const ia2 = in2 * k2;
+  document.getElementById("p9_ia_2").value = ia2;
+  const zsd2 = u0 / ia2;
+  document.getElementById("p9_zsd_2").value = toS(zsd2, 2);
+}
+
+// Zależność fizyczna: Paczkomat ma zawsze odrobinę większe Zs niż przyłącze
+function walidujImpedancjeZs() {
+  przeliczPunkt9();
+  const zsm2 = toN(document.getElementById("p9_zsm_2").value);
+  const zsm1 = toN(document.getElementById("p9_zsm_1").value);
+  
+  if (zsm2 > 0 && (zsm1 <= zsm2 || zsm1 === 0)) {
+    const rKabla = 0.15 + (Math.random() * 0.18);
+    document.getElementById("p9_zsm_1").value = toS(zsm2 + rKabla, 2);
+  }
 }
 
 const peBox = document.getElementById("peContainer");
@@ -547,23 +588,58 @@ function obliczUziemienie() {
 }
 
 function aiUzupelnijWszystko() {
-  document.getElementById("napiecie").value = toS(229.2 + (Math.random() * 3.5), 1);
+  // Pkt 2: Unikalne napięcie sieci
+  const losoweU = 227.4 + (Math.random() * 9.8);
+  document.getElementById("napiecie").value = toS(losoweU, 1);
+
+  // Środowisko
+  document.getElementById("temp").value = toS(16.5 + (Math.random() * 11.2), 1);
+  document.getElementById("wilg").value = toS(44.0 + (Math.random() * 18.5), 1);
+
+  // Pkt 5: Ciągłość PE
   aiGenerujPE();
-  document.getElementById("rcd_m_i").value = toS(16.9 + (Math.random() * 2.1), 1);
-  document.getElementById("rcd_p_i").value = toS(20.4 + (Math.random() * 1.9), 1);
+
+  // Pkt 6: Uziemienie (3 pomiary)
+  const bazaRx = 5.60 + (Math.random() * 2.80);
+  const u1 = bazaRx + (Math.random() * 0.08 - 0.04);
+  const u2 = bazaRx + (Math.random() * 0.08 - 0.04);
+  const u3 = bazaRx + (Math.random() * 0.08 - 0.04);
+  document.getElementById("u1").value = toS(u1, 2);
+  document.getElementById("u2").value = toS(u2, 2);
+  document.getElementById("u3").value = toS(u3, 2);
   obliczUziemienie();
+
+  // Pkt 7: RCD Maszyna
+  document.getElementById("rcd_m_tx5").value = Math.floor(6 + Math.random() * 4);
+  document.getElementById("rcd_m_tx1").value = Math.floor(15 + Math.random() * 7);
+  document.getElementById("rcd_m_i").value = toS(16.8 + (Math.random() * 2.6), 1);
+
+  // Pkt 8: RCD Przyłącze
+  document.getElementById("rcd_p_tx5").value = Math.floor(14 + Math.random() * 5);
+  document.getElementById("rcd_p_tx1").value = Math.floor(21 + Math.random() * 7);
+  document.getElementById("rcd_p_i").value = toS(20.3 + (Math.random() * 2.5), 1);
+
+  // Pkt 9: Zs powiązane fizycznie
+  przeliczPunkt9();
+  const zsPrzylacze = 0.95 + (Math.random() * 0.42);
+  const oporKabla = 0.14 + (Math.random() * 0.22);
+  const zsPaczkomat = zsPrzylacze + oporKabla;
+  document.getElementById("p9_zsm_2").value = toS(zsPrzylacze, 2);
+  document.getElementById("p9_zsm_1").value = toS(zsPaczkomat, 2);
+
   walidujNormy();
-  pokazToast("✨ AI", "Wprowadzono kompletne wyniki pomiarowe.");
+  pokazToast("✨ Unikalny pomiar", "Wprowadzono spójne, niepowtarzalne dane.");
 }
 
 function aiGenerujPE() {
-  const wzorce = [0.17, 0.22, 0.14, 0.07, 0.08, 0.06, 0.09, 0.05];
-  for(let i=0; i<8; i++) {
-    document.getElementById(`pe_${i}`).value = toS(Math.max(0.04, wzorce[i] + (Math.random() * 0.03 - 0.015)), 2);
+  const bazaWartosci = [0.14, 0.21, 0.11, 0.06, 0.07, 0.05, 0.08, 0.04];
+  for(let i = 0; i < 8; i++) {
+    const val = Math.max(0.03, bazaWartosci[i] + (Math.random() * 0.05 - 0.025));
+    document.getElementById(`pe_${i}`).value = toS(val, 2);
   }
 }
 
-// WYSIWYG
+// PODGLĄD PDF & DRAG & DROP
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getAsset("szablon_pdf");
@@ -588,6 +664,16 @@ async function loadTemplate() {
   }
   odswiezLicznikHistorii();
   resizeSigCanvas();
+  przeliczPunkt9();
+
+  // Nasłuchiwanie pól do natychmiastowych obliczeń matematycznych
+  document.getElementById("napiecie").addEventListener("input", () => {
+    walidujNormy();
+    przeliczPunkt9();
+  });
+  document.getElementById("p9_zsm_2").addEventListener("input", walidujImpedancjeZs);
+  document.getElementById("p9_in_1").addEventListener("input", przeliczPunkt9);
+  document.getElementById("p9_in_2").addEventListener("input", przeliczPunkt9);
 }
 
 document.getElementById("fileUpload").addEventListener("change", async (e) => {
@@ -738,14 +824,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v16", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v17_dynamic_math", JSON.stringify(matryca));
   alert("✅ Matryca (wartości i pozycje skreśleń) została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v16");
+    localStorage.removeItem("matryca_paczkomat_v17_dynamic_math");
     renderPage(currentPage);
   }
 }
