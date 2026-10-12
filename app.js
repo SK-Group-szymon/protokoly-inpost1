@@ -179,23 +179,48 @@ function zapiszProfilMiernika() {
 // OBSŁUGA CZCIONKI ODRĘCZNEJ
 async function wgrajWlasnaCzcionke(file) {
   if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await storeAsset("reczny_font_ttf", buffer);
-  pokazToast("🔤 Czcionka zapisana", "Wgrano plik czcionki! PDF będzie wypalany tym pismem.");
+  try {
+    const buffer = await file.arrayBuffer();
+    await storeAsset("reczny_font_ttf", buffer);
+    pokazToast("🔤 Czcionka zapisana", "Wgrano plik czcionki! PDF będzie wypalany tym pismem.");
+  } catch (err) {
+    console.error("Błąd zapisu czcionki:", err);
+  }
 }
 
+// POBIERANIE CZCIONKI ODRĘCZNEJ (NAJPIERW GITHUB, POTEM BAZA, POTEM CDN)
 async function getHandwritingFontBytes() {
-  let fontBytes = await getAsset("reczny_font_ttf");
-  if (fontBytes) return fontBytes;
-
+  // 1. Priorytet: czysty plik czcionka.ttf prosto z GitHuba
   try {
-    const res = await fetch("czcionka.ttf");
+    const res = await fetch("czcionka.ttf?v=" + Date.now(), { cache: "no-store" });
     if (res.ok) {
-      fontBytes = await res.arrayBuffer();
-      await storeAsset("reczny_font_ttf", fontBytes);
-      return fontBytes;
+      const buffer = await res.arrayBuffer();
+      if (buffer.byteLength > 20000) {
+        return buffer;
+      }
+    }
+  } catch (err) {
+    console.warn("Brak lub błąd czcionka.ttf z GitHuba:", err);
+  }
+
+  // 2. Jeśli brak na GitHubie, sprawdź czcionkę wgraną ręcznie do pamięci
+  try {
+    const savedFont = await getAsset("reczny_font_ttf");
+    if (savedFont && savedFont.byteLength > 20000) {
+      return savedFont;
     }
   } catch (_) {}
+
+  // 3. Zapasowe, sprawdzone źródło fontu Caveat-Bold TrueType
+  try {
+    const fallbackRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/static/Caveat-Bold.ttf");
+    if (fallbackRes.ok) {
+      return await fallbackRes.arrayBuffer();
+    }
+  } catch (_) {}
+
+  return null;
+}
 
   const fallbackUrls = [
     "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/static/Caveat-Bold.ttf",
