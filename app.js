@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v21_final";
+const DB_NAME = "ProtokolantDB_A2_v22_patrickhand";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// MATRYCA WSPÓŁRZĘDNYCH
+// PEŁNA MATRYCA WSPÓŁRZĘDNYCH (WARTOŚCI + SKREŚLENIA)
 const bazowaMatryca = {
   // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
@@ -134,7 +134,7 @@ const bazowaMatryca = {
   "skr_p6_nie_umozliwia":{"page":6,"x":274,"y":382,"width":140,"isStrike":true,"label":"── NIE UMOŻLIWIAJĄCYM* ──"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v21")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v22")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -175,11 +175,11 @@ function zapiszProfilMiernika() {
   localStorage.setItem("profile_miernikow", JSON.stringify(profileMiernikow));
 }
 
-// POBIERANIE CZCIONKI KALAM
+// POBIERANIE CZCIONKI PATRICK HAND (BEZPIECZNY, STABILNY PLIK TTF)
 async function getHandwritingFontBytes() {
   const urls = [
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf",
-    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/kalam/Kalam-Bold.ttf"
+    "https://raw.githubusercontent.com/google/fonts/main/ofl/patrickhand/PatrickHand-Regular.ttf",
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/patrickhand/PatrickHand-Regular.ttf"
   ];
 
   for (const u of urls) {
@@ -187,7 +187,7 @@ async function getHandwritingFontBytes() {
       const res = await fetch(u);
       if (res.ok) {
         const buf = await res.arrayBuffer();
-        if (buf && buf.byteLength > 40000) {
+        if (buf && buf.byteLength > 20000) {
           return buf;
         }
       }
@@ -682,14 +682,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v21", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v22", JSON.stringify(matryca));
   alert("✅ Matryca została trwale zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v21");
+    localStorage.removeItem("matryca_paczkomat_v22");
     renderPage(currentPage);
   }
 }
@@ -725,7 +725,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF
+// GENEROWANIE DOKUMENTU PDF Z NOWĄ CZCIONKĄ PATRICK HAND
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -751,7 +751,7 @@ async function generujWydrukPDF() {
         customFont = await pdfDoc.embedFont(fontBuffer);
       }
     } catch (fontErr) {
-      console.warn("Błąd parsowania fontu Kalam:", fontErr);
+      console.warn("Błąd parsowania fontu Patrick Hand:", fontErr);
     }
 
     if (!customFont) {
