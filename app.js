@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v24_exact_strikes";
+const DB_NAME = "ProtokolantDB_A2_v28_final_block";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,7 +15,7 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// SKALIBROWANA MATRYCA WSPÓŁRZĘDNYCH I DŁUGOŚCI SKREŚLEŃ
+// MATRYCA WSPÓŁRZĘDNYCH ZE ZINTEGROWANYM BLOKIEM GRAFICZNYM PODPISU
 const bazowaMatryca = {
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
   "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
@@ -89,7 +89,7 @@ const bazowaMatryca = {
   "rcd_m_i":{"page":3,"x":274,"y":693,"fsize":11},
   "rcd_m_ub":{"page":3,"x":270,"y":709,"fsize":11,"txt":"0,3"},
   "skr_p3_uziemienie":{"page":3,"x":494,"y":208,"width":26,"isStrike":true},
-  "skr_p3_polaczenie_gora":{"page":3,"x":362,"y":512,"width":22,"isStrike":true},
+  "skr_p3_polaczenie_gora":{"page":3,"x":362,"y":513,"width":22,"isStrike":true},
   "skr_p3_ogledziny_rcd":{"page":3,"x":452,"y":591,"width":72,"isStrike":true},
   "skr_p3_test_rcd":{"page":3,"x":462,"y":611,"width":65,"isStrike":true},
   "skr_p3_wylaczyl":{"page":3,"x":499,"y":632,"width":26,"isStrike":true},
@@ -123,18 +123,32 @@ const bazowaMatryca = {
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-  "upr1":{"page":6,"x":264,"y":433,"fsize":8.5,"txt":"Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030"},
-  "upr2":{"page":6,"x":250,"y":470,"fsize":9,"txt":"G1/D/334/748/26; G1/E/5634/720/25"},
-  "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true}
+  // Strona 6: Skreślenie oraz cały blok tabeli z podpisem i uprawnieniami
+  "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true},
+  "tabela_podpis":{"page":6,"x":40,"y":410,"width":515,"height":80,"isFullImageBlock":true}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v24")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v28")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
 let currentScale = 1.0;
 let activeBoxId = null;
 let currentNudgeStep = 1;
+let cachedBlockBytes = null;
+
+// WCZYTANIE PLIKU BLOK_PODPISU.PNG
+async function getBlockBytes() {
+  if (cachedBlockBytes) return cachedBlockBytes;
+  try {
+    const res = await fetch("blok_podpisu.png?v=" + Date.now());
+    if (res.ok) {
+      cachedBlockBytes = await res.arrayBuffer();
+      return cachedBlockBytes;
+    }
+  } catch (_) {}
+  return null;
+}
 
 // PROFILE MIERNIKÓW
 const domyslneProfile = {
@@ -493,7 +507,7 @@ function aiGenerujPE() {
   }
 }
 
-// INICJALIZACJA I PODGLĄD PDF
+// INICJALIZACJA
 async function loadTemplate() {
   await initDB();
   loadedPdfBytes = await getAsset("szablon_pdf");
@@ -507,6 +521,9 @@ async function loadTemplate() {
       }
     } catch (_) {}
   }
+
+  // Wstępne wczytanie grafiki bloku podpisu
+  getBlockBytes();
 
   if (loadedPdfBytes) {
     document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
@@ -562,7 +579,7 @@ async function renderPage(num) {
   renderDraggableTags(num);
 }
 
-// RENDEROWANIE: DLA SKREŚLEŃ CZYSTA LINIA ORAZ UCHWYT DO ROZCIĄGANIA
+// RENDEROWANIE ELEMENTÓW
 function renderDraggableTags(num) {
   const layer = document.getElementById("dragLayer");
   layer.innerHTML = "";
@@ -592,6 +609,20 @@ function renderDraggableTags(num) {
 
       const handle = tag.querySelector('.resize-handle');
       handle.addEventListener('pointerdown', (e) => startResizeStrike(e, id));
+
+    } else if (item.isFullImageBlock) {
+      // Podgląd całego wklejanego okna podpisu i tabeli w edytorze
+      const wPx = (item.width || 515) * currentScale;
+      const hPx = (item.height || 80) * currentScale;
+      tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
+      tag.style.padding = '0';
+      tag.style.background = 'rgba(99, 102, 241, 0.2)';
+      tag.style.border = '2px dashed #4f46e5';
+      tag.style.width = `${wPx}px`;
+      tag.style.height = `${hPx}px`;
+      tag.style.left = `${item.x * currentScale}px`;
+      tag.style.top = `${item.y * currentScale}px`;
+      tag.innerHTML = `<img src="blok_podpisu.png" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" alt="Tabela podpisu">`;
 
     } else {
       let displayVal = item.txt;
@@ -745,14 +776,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v24", JSON.stringify(matryca));
-  alert("✅ Matryca została trwale zapisana!");
+  localStorage.setItem("matryca_paczkomat_v28", JSON.stringify(matryca));
+  alert("✅ Matryca (współrzędne i pozycja tabeli podpisu) została zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v24");
+    localStorage.removeItem("matryca_paczkomat_v28");
     renderPage(currentPage);
   }
 }
@@ -788,7 +819,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF
+// GENEROWANIE DOKUMENTU PDF Z CAŁĄ TABELĄ PODPISU
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -847,7 +878,30 @@ async function generujWydrukPDF() {
       });
     };
 
+    // 1. Wypalenie całego okna tabeli podpisu na stronie 6
+    const blockBytes = await getBlockBytes();
+    if (blockBytes) {
+      try {
+        const blockImage = await pdfDoc.embedPng(blockBytes);
+        const p6 = pages[5];
+        const h6 = p6.getSize().height;
+        const b = matryca["tabela_podpis"] || { x: 40, y: 410, width: 515, height: 80 };
+
+        p6.drawImage(blockImage, {
+          x: b.x,
+          y: h6 - b.y - b.height,
+          width: b.width,
+          height: b.height
+        });
+      } catch (imgErr) {
+        console.warn("Błąd osadzania grafiki blok_podpisu.png:", imgErr);
+      }
+    }
+
+    // 2. Nanoszenie wartości liczbowych oraz skreśleń
     for (const [id, item] of Object.entries(matryca)) {
+      if (item.isFullImageBlock) continue;
+
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
         continue;
