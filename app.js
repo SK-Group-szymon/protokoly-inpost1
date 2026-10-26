@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v32_no_page6";
+const DB_NAME = "ProtokolantDB_A2_v33_weather_fix";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -129,7 +129,7 @@ const bazowaMatryca = {
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v32")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v33")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -437,7 +437,7 @@ function obliczUziemienie() {
   uBadge.className = r > 10.0 ? "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30" : "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
 }
 
-// 1. POBIERANIE REALNEJ POGODY DLA ZĄBEK/WARSZAWY Z API OPEN-METEO
+// 1. POBIERANIE POGODY TYLKO I WYŁĄCZNIE NA PODSTAWIE DATY (Z 12:00)
 async function pobierzPogodeDlaDaty() {
   try {
     const dd = document.getElementById("data_dd").value || new Date().getDate().toString().padStart(2, '0');
@@ -445,33 +445,31 @@ async function pobierzPogodeDlaDaty() {
     const rr = document.getElementById("data_rr").value || new Date().getFullYear().toString().slice(-2);
     const fullYear = "20" + rr;
     const dataStr = `${fullYear}-${mm}-${dd}`;
-    const dzis = new Date().toISOString().split('T')[0];
 
-    let url = "";
     let temp, wilg;
 
-    if (dataStr === dzis) {
-      url = "https://api.open-meteo.com/v1/forecast?latitude=52.29&longitude=21.11&current=temperature_2m,relative_humidity_2m";
-      const res = await fetch(url);
-      const data = await res.json();
-      temp = data.current.temperature_2m;
-      wilg = data.current.relative_humidity_2m;
-    } else {
-      url = `https://archive-api.open-meteo.com/v1/archive?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data && data.hourly && data.hourly.temperature_2m.length > 12) {
-        temp = data.hourly.temperature_2m[12];
-        wilg = data.hourly.relative_humidity_2m[12];
-      } else {
-        throw new Error("Brak danych w archiwum");
-      }
+    // 1. Zawsze najpierw próbujemy pobrać dane archiwalne z wpisanej daty (Open-Meteo Archive API)
+    let url = `https://archive-api.open-meteo.com/v1/archive?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
+    let res = await fetch(url);
+    let data = await res.json();
+
+    // 2. Jeśli brakuje danych (np. data to wczoraj, dzisiaj lub przyszłość), przechodzimy na API prognozy długoterminowej
+    if (data.error || !data.hourly || data.hourly.temperature_2m.length <= 12 || data.hourly.temperature_2m[12] === null) {
+      url = `https://api.open-meteo.com/v1/forecast?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
+      res = await fetch(url);
+      data = await res.json();
     }
 
-    if (temp !== undefined && wilg !== undefined) {
+    // Niezależnie od tego z którego API pochodzą dane, zawsze bierzemy godzinę 12:00 dla dnia wpisanego w protokół
+    if (data && data.hourly && data.hourly.temperature_2m.length > 12) {
+      temp = data.hourly.temperature_2m[12];
+      wilg = data.hourly.relative_humidity_2m[12];
+      
       document.getElementById("temp").value = toS(temp, 1);
       document.getElementById("wilg").value = toS(wilg, 1);
-      pokazToast("☁️ Pogoda API", `Pobrano realną z Ząbek: ${temp}°C, ${wilg}%`);
+      pokazToast("☁️ Pogoda (12:00)", `Dopasowano dla daty ${dd}.${mm}.${rr}: ${temp}°C, ${wilg}%`);
+    } else {
+      throw new Error("Brak danych dla wpisanego dnia.");
     }
   } catch (e) {
     console.warn("Błąd API pogody, losowanie zastępcze:", e);
@@ -488,7 +486,7 @@ async function pobierzPogodeDlaDaty() {
 
 // 2. SZTUCZNA INTELIGENCJA - FIZYCZNIE SPÓJNE PARAMETRY
 async function aiUzupelnijWszystko() {
-  pokazToast("✨ AI Oblicza...", "Pobieranie pogody i wyliczanie spójnej fizyki...");
+  pokazToast("✨ AI Oblicza...", "Pobieranie dokładnej pogody z daty i wyliczanie fizyki...");
   
   await pobierzPogodeDlaDaty();
 
@@ -781,14 +779,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v32", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v33", JSON.stringify(matryca));
   alert("✅ Matryca zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v32");
+    localStorage.removeItem("matryca_paczkomat_v33");
     renderPage(currentPage);
   }
 }
@@ -879,7 +877,7 @@ async function generujWydrukPDF() {
       });
     };
 
-    // Nanoszenie wartości liczbowych oraz skreśleń (bez strony 6)
+    // Nanoszenie wartości liczbowych oraz skreśleń
     for (const [id, item] of Object.entries(matryca)) {
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
