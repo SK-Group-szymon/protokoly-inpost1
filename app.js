@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v30_perfect_fit";
+const DB_NAME = "ProtokolantDB_A2_v28_final_block";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,9 +15,8 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// MATRYCA WSPÓŁRZĘDNYCH ZE SKORYGOWANYM POŁOŻENIEM BLOKU W GÓRNEJ KRATCE
+// MATRYCA WSPÓŁRZĘDNYCH ZE ZINTEGROWANYM BLOKIEM GRAFICZNYM PODPISU
 const bazowaMatryca = {
-  // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
   "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
   "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
@@ -44,7 +43,6 @@ const bazowaMatryca = {
   "skr_p1_indoor":{"page":1,"x":337,"y":294,"width":137,"isStrike":true},
   "skr_p1_selektywnosc":{"page":1,"x":248,"y":758,"width":26,"isStrike":true},
 
-  // Strona 2
   "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
   "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
   "iz1":{"page":2,"x":222,"y":287,"fsize":11},
@@ -79,7 +77,6 @@ const bazowaMatryca = {
   "skr_p2_ogledziny":{"page":2,"x":456,"y":669,"width":64,"isStrike":true},
   "skr_p2_mocowanie":{"page":2,"x":308,"y":684,"width":69,"isStrike":true},
 
-  // Strona 3
   "u1":{"page":3,"x":111,"y":197,"fsize":11},
   "u2":{"page":3,"x":112,"y":216,"fsize":11},
   "u3":{"page":3,"x":114,"y":232,"fsize":11},
@@ -100,7 +97,6 @@ const bazowaMatryca = {
   "skr_p3_nie_jest":{"page":3,"x":181,"y":761,"width":55,"isStrike":true},
   "skr_p3_nie_moze":{"page":3,"x":310,"y":761,"width":54,"isStrike":true},
 
-  // Strona 4
   "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
   "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
   "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
@@ -124,16 +120,15 @@ const bazowaMatryca = {
   "skr_p4_zs1":{"page":4,"x":511,"y":471,"width":26,"isStrike":true},
   "skr_p4_zs2":{"page":4,"x":508,"y":518,"width":26,"isStrike":true},
 
-  // Strona 5
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
 
-  // Strona 6: Skreślenie i idealnie dopasowany blok w górnej kratce
+  // Strona 6: Skreślenie oraz cały blok tabeli z podpisem i uprawnieniami
   "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true},
-  "tabela_podpis":{"page":6,"x":28,"y":180,"width":538,"height":82,"isFullImageBlock":true}
+  "tabela_podpis":{"page":6,"x":40,"y":410,"width":515,"height":80,"isFullImageBlock":true}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v30")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v28")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -243,7 +238,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// GŁOS
+// ASYSTENT GŁOSOWY
 let recognition = null;
 let czyNagrywa = false;
 
@@ -394,7 +389,7 @@ function wyczyscCalaHistorie() {
   }
 }
 
-// MATEMATYKA PKT 9
+// MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -527,6 +522,7 @@ async function loadTemplate() {
     } catch (_) {}
   }
 
+  // Wstępne wczytanie grafiki bloku podpisu
   getBlockBytes();
 
   if (loadedPdfBytes) {
@@ -615,25 +611,18 @@ function renderDraggableTags(num) {
       handle.addEventListener('pointerdown', (e) => startResizeStrike(e, id));
 
     } else if (item.isFullImageBlock) {
-      // Wyrównanie od lewej krawędzi górnej (top-left) identycznie jak w PDF
-      const wPx = (item.width || 538) * currentScale;
-      const hPx = (item.height || 82) * currentScale;
+      // Podgląd całego wklejanego okna podpisu i tabeli w edytorze
+      const wPx = (item.width || 515) * currentScale;
+      const hPx = (item.height || 80) * currentScale;
       tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
       tag.style.padding = '0';
-      tag.style.transform = 'none';
       tag.style.background = 'rgba(99, 102, 241, 0.2)';
       tag.style.border = '2px dashed #4f46e5';
       tag.style.width = `${wPx}px`;
       tag.style.height = `${hPx}px`;
       tag.style.left = `${item.x * currentScale}px`;
       tag.style.top = `${item.y * currentScale}px`;
-      tag.innerHTML = `
-        <img src="blok_podpisu.png" style="width:100%; height:100%; object-fit:fill; pointer-events:none;" alt="Tabela podpisu">
-        <div class="block-corner-handle" style="position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; background: #4f46e5; border: 2px solid white; border-radius: 4px; cursor: nwse-resize; z-index: 60;"></div>
-      `;
-
-      const cornerHandle = tag.querySelector('.block-corner-handle');
-      cornerHandle.addEventListener('pointerdown', (e) => startResizeCorner(e, id));
+      tag.innerHTML = `<img src="blok_podpisu.png" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" alt="Tabela podpisu">`;
 
     } else {
       let displayVal = item.txt;
@@ -649,46 +638,11 @@ function renderDraggableTags(num) {
     }
 
     tag.addEventListener("pointerdown", (e) => {
-      if (e.target.classList.contains('resize-handle') || e.target.classList.contains('block-corner-handle')) return;
+      if (e.target.classList.contains('resize-handle')) return;
       startDrag(e, id);
     });
     layer.appendChild(tag);
   }
-}
-
-function startResizeCorner(e, id) {
-  e.stopPropagation();
-  e.preventDefault();
-  activeBoxId = id;
-  updateDpadStatus();
-
-  const startX = e.clientX;
-  const startY = e.clientY;
-  const initW = matryca[id].width || 538;
-  const initH = matryca[id].height || 82;
-
-  function onPointerMove(ev) {
-    ev.preventDefault();
-    const deltaX = (ev.clientX - startX) / currentScale;
-    const deltaY = (ev.clientY - startY) / currentScale;
-    matryca[id].width = Math.max(50, Math.round(initW + deltaX));
-    matryca[id].height = Math.max(20, Math.round(initH + deltaY));
-
-    const tag = document.getElementById(`tag_${id}`);
-    if (tag) {
-      tag.style.width = `${matryca[id].width * currentScale}px`;
-      tag.style.height = `${matryca[id].height * currentScale}px`;
-    }
-    updateDpadStatus();
-  }
-
-  function onPointerUp() {
-    window.removeEventListener("pointermove", onPointerMove);
-    window.removeEventListener("pointerup", onPointerUp);
-  }
-
-  window.addEventListener("pointermove", onPointerMove, { passive: false });
-  window.addEventListener("pointerup", onPointerUp);
 }
 
 function startResizeStrike(e, id) {
@@ -762,22 +716,11 @@ function nudge(dx, dy) {
   updateDpadStatus();
 }
 
-function zmienRozmiarBloku(dw, dh) {
-  if (!activeBoxId || !matryca[activeBoxId]) return;
-  const item = matryca[activeBoxId];
-  if (item.isFullImageBlock) {
-    item.width = Math.max(50, (item.width || 538) + dw);
-    item.height = Math.max(20, (item.height || 82) + dh);
-    const tag = document.getElementById(`tag_${activeBoxId}`);
-    if (tag) {
-      tag.style.width = `${item.width * currentScale}px`;
-      tag.style.height = `${item.height * currentScale}px`;
-    }
-  } else if (item.isStrike) {
-    item.width = Math.max(10, (item.width || 30) + dw);
-    const tag = document.getElementById(`tag_${activeBoxId}`);
-    if (tag) tag.style.width = `${item.width * currentScale}px`;
-  }
+function zmienDlugoscSkreslenia(delta) {
+  if (!activeBoxId || !matryca[activeBoxId] || !matryca[activeBoxId].isStrike) return;
+  matryca[activeBoxId].width = Math.max(10, (matryca[activeBoxId].width || 30) + delta);
+  const tag = document.getElementById(`tag_${activeBoxId}`);
+  if (tag) tag.style.width = `${matryca[activeBoxId].width * currentScale}px`;
   updateDpadStatus();
 }
 
@@ -797,46 +740,26 @@ function deselectActiveBox() {
 
 function updateDpadStatus() {
   if (!activeBoxId) return;
-  const item = matryca[activeBoxId];
+  const isStr = matryca[activeBoxId].isStrike;
   document.getElementById("mobileDpad").classList.remove("hidden");
-
-  let infoText = "";
-  if (item.isFullImageBlock) {
-    infoText = `Tabela Podpisu (${item.x}, ${item.y}) Rozmiar: ${item.width}x${item.height}px`;
-  } else if (item.isStrike) {
-    infoText = `Skreślenie (${item.x}, ${item.y}) Dł: ${item.width}px`;
-  } else {
-    infoText = `${activeBoxId} (${item.x}, ${item.y})`;
-  }
-
+  const infoText = isStr 
+    ? `Skreślenie (${matryca[activeBoxId].x}, ${matryca[activeBoxId].y}) dł: ${matryca[activeBoxId].width}px`
+    : `${activeBoxId} (${matryca[activeBoxId].x}, ${matryca[activeBoxId].y})`;
   document.getElementById("dpadLabel").innerHTML = infoText;
   document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
 
-  let scalePanel = document.getElementById("customScaleControlPanel");
-  if (scalePanel) scalePanel.remove();
-
-  if (item.isFullImageBlock) {
+  let resizeBtns = document.getElementById("strikeResizePanel");
+  if (!resizeBtns && isStr) {
     const p = document.createElement("div");
-    p.id = "customScaleControlPanel";
-    p.className = "flex flex-wrap gap-1 ml-2 border-l border-slate-700 pl-2 max-w-[200px]";
-    p.innerHTML = `
-      <button onclick="zmienRozmiarBloku(-6, -3)" class="text-[9px] bg-slate-800 text-amber-300 font-bold px-1.5 py-1 rounded">Mniejszy (-)</button>
-      <button onclick="zmienRozmiarBloku(6, 3)" class="text-[9px] bg-slate-800 text-emerald-400 font-bold px-1.5 py-1 rounded">Większy (+)</button>
-      <button onclick="zmienRozmiarBloku(6, 0)" class="text-[9px] bg-slate-800 text-cyan-300 font-bold px-1.5 py-1 rounded">Szerzej [W+]</button>
-      <button onclick="zmienRozmiarBloku(-6, 0)" class="text-[9px] bg-slate-800 text-cyan-300 font-bold px-1.5 py-1 rounded">Węziej [W-]</button>
-      <button onclick="zmienRozmiarBloku(0, 4)" class="text-[9px] bg-slate-800 text-purple-300 font-bold px-1.5 py-1 rounded">Wyżej [H+]</button>
-      <button onclick="zmienRozmiarBloku(0, -4)" class="text-[9px] bg-slate-800 text-purple-300 font-bold px-1.5 py-1 rounded">Niżej [H-]</button>
-    `;
-    document.getElementById("mobileDpad").appendChild(p);
-  } else if (item.isStrike) {
-    const p = document.createElement("div");
-    p.id = "customScaleControlPanel";
+    p.id = "strikeResizePanel";
     p.className = "flex gap-1 ml-2 border-l border-slate-700 pl-2";
     p.innerHTML = `
-      <button onclick="zmienRozmiarBloku(-4, 0)" class="text-[10px] bg-slate-800 text-amber-300 font-bold px-2 py-1 rounded">Krótsza (-)</button>
-      <button onclick="zmienRozmiarBloku(4, 0)" class="text-[10px] bg-slate-800 text-emerald-400 font-bold px-2 py-1 rounded">Dłuższa (+)</button>
+      <button onclick="zmienDlugoscSkreslenia(-4)" class="text-[10px] bg-slate-800 text-amber-300 font-bold px-2 py-1 rounded">Krótsza (-)</button>
+      <button onclick="zmienDlugoscSkreslenia(4)" class="text-[10px] bg-slate-800 text-emerald-400 font-bold px-2 py-1 rounded">Dłuższa (+)</button>
     `;
     document.getElementById("mobileDpad").appendChild(p);
+  } else if (resizeBtns && !isStr) {
+    resizeBtns.remove();
   }
 }
 
@@ -849,28 +772,18 @@ window.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowRight') { e.preventDefault(); nudge(krok, 0); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); nudge(0, -krok); }
   else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0, krok); }
-  else if (e.key === '+' || e.key === '=') { 
-    e.preventDefault(); 
-    if (e.shiftKey) zmienRozmiarBloku(0, 4);
-    else zmienRozmiarBloku(6, 3);
-  }
-  else if (e.key === '-' || e.key === '_') { 
-    e.preventDefault(); 
-    if (e.shiftKey) zmienRozmiarBloku(0, -4);
-    else zmienRozmiarBloku(-6, -3);
-  }
   else if (e.key === 'Escape') { deselectActiveBox(); }
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v30", JSON.stringify(matryca));
-  alert("✅ Matryca (dokładna pozycja tabeli) została zapisana!");
+  localStorage.setItem("matryca_paczkomat_v28", JSON.stringify(matryca));
+  alert("✅ Matryca (współrzędne i pozycja tabeli podpisu) została zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v30");
+    localStorage.removeItem("matryca_paczkomat_v28");
     renderPage(currentPage);
   }
 }
@@ -906,7 +819,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF Z DOKŁADNYM ODWZOROWANIEM POZYCJI 1:1
+// GENEROWANIE DOKUMENTU PDF Z CAŁĄ TABELĄ PODPISU
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -965,16 +878,15 @@ async function generujWydrukPDF() {
       });
     };
 
-    // 1. WYPALENIE CAŁEGO BLOKU TABELI W GÓRNEJ KRATCE (MATEMATYKA 1:1)
+    // 1. Wypalenie całego okna tabeli podpisu na stronie 6
     const blockBytes = await getBlockBytes();
     if (blockBytes) {
       try {
         const blockImage = await pdfDoc.embedPng(blockBytes);
         const p6 = pages[5];
         const h6 = p6.getSize().height;
-        const b = matryca["tabela_podpis"] || { x: 28, y: 180, width: 538, height: 82 };
+        const b = matryca["tabela_podpis"] || { x: 40, y: 410, width: 515, height: 80 };
 
-        // Obliczenie lewego górnego rogu dokładnie jak w widoku DOM
         p6.drawImage(blockImage, {
           x: b.x,
           y: h6 - b.y - b.height,
