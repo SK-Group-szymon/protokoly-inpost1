@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v28_final_block";
+const DB_NAME = "ProtokolantDB_A2_v32_no_page6";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -15,8 +15,9 @@ const getAsset = (key) => new Promise((resolve) => {
   req.onerror = () => resolve(null);
 });
 
-// MATRYCA WSPÓŁRZĘDNYCH ZE ZINTEGROWANYM BLOKIEM GRAFICZNYM PODPISU
+// MATRYCA WSPÓŁRZĘDNYCH (USUNIĘTO STRONĘ 6)
 const bazowaMatryca = {
+  // Strona 1
   "nr_protokolu":{"page":1,"x":205,"y":78,"fsize":13},
   "podwykonawca":{"page":1,"x":330,"y":78,"fsize":11,"txt":"HOVERBUD"},
   "rok":{"page":1,"x":441,"y":75,"fsize":11,"txt":"2026 r."},
@@ -43,6 +44,7 @@ const bazowaMatryca = {
   "skr_p1_indoor":{"page":1,"x":337,"y":294,"width":137,"isStrike":true},
   "skr_p1_selektywnosc":{"page":1,"x":248,"y":758,"width":26,"isStrike":true},
 
+  // Strona 2
   "napiecie":{"page":2,"x":158,"y":100,"fsize":11.5},
   "czest":{"page":2,"x":171,"y":127,"fsize":11.5,"txt":"50,0"},
   "iz1":{"page":2,"x":222,"y":287,"fsize":11},
@@ -77,6 +79,7 @@ const bazowaMatryca = {
   "skr_p2_ogledziny":{"page":2,"x":456,"y":669,"width":64,"isStrike":true},
   "skr_p2_mocowanie":{"page":2,"x":308,"y":684,"width":69,"isStrike":true},
 
+  // Strona 3
   "u1":{"page":3,"x":111,"y":197,"fsize":11},
   "u2":{"page":3,"x":112,"y":216,"fsize":11},
   "u3":{"page":3,"x":114,"y":232,"fsize":11},
@@ -97,6 +100,7 @@ const bazowaMatryca = {
   "skr_p3_nie_jest":{"page":3,"x":181,"y":761,"width":55,"isStrike":true},
   "skr_p3_nie_moze":{"page":3,"x":310,"y":761,"width":54,"isStrike":true},
 
+  // Strona 4
   "rcd_p_tx5":{"page":4,"x":381,"y":195,"fsize":11},
   "rcd_p_tx1":{"page":4,"x":383,"y":213,"fsize":11},
   "rcd_p_i":{"page":4,"x":276,"y":227,"fsize":11},
@@ -120,35 +124,18 @@ const bazowaMatryca = {
   "skr_p4_zs1":{"page":4,"x":511,"y":471,"width":26,"isStrike":true},
   "skr_p4_zs2":{"page":4,"x":508,"y":518,"width":26,"isStrike":true},
 
+  // Strona 5
   "nd1":{"page":5,"x":428,"y":96,"fsize":24,"txt":"N/D"},
-  "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"},
-
-  // Strona 6: Skreślenie oraz cały blok tabeli z podpisem i uprawnieniami
-  "skr_p6_nie_umozliwia":{"page":6,"x":284,"y":382,"width":127,"isStrike":true},
-  "tabela_podpis":{"page":6,"x":40,"y":410,"width":515,"height":80,"isFullImageBlock":true}
+  "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v28")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v32")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
 let currentScale = 1.0;
 let activeBoxId = null;
 let currentNudgeStep = 1;
-let cachedBlockBytes = null;
-
-// WCZYTANIE PLIKU BLOK_PODPISU.PNG
-async function getBlockBytes() {
-  if (cachedBlockBytes) return cachedBlockBytes;
-  try {
-    const res = await fetch("blok_podpisu.png?v=" + Date.now());
-    if (res.ok) {
-      cachedBlockBytes = await res.arrayBuffer();
-      return cachedBlockBytes;
-    }
-  } catch (_) {}
-  return null;
-}
 
 // PROFILE MIERNIKÓW
 const domyslneProfile = {
@@ -189,7 +176,6 @@ async function getHandwritingFontBytes() {
     "https://raw.githubusercontent.com/google/fonts/main/ofl/patrickhand/PatrickHand-Regular.ttf",
     "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/patrickhand/PatrickHand-Regular.ttf"
   ];
-
   for (const u of urls) {
     try {
       const res = await fetch(u);
@@ -238,7 +224,7 @@ async function przetworzZdjecieTabliczki(file) {
   }
 }
 
-// ASYSTENT GŁOSOWY
+// GŁOS
 let recognition = null;
 let czyNagrywa = false;
 
@@ -265,7 +251,7 @@ function toggleGlos() {
     recognition.start();
     document.getElementById("btnGlos").className = "flex items-center gap-1 bg-rose-600 text-white px-2.5 py-1 rounded-lg font-bold animate-pulse";
     document.getElementById("micText").innerText = "Słucham...";
-    pokazToast("🎙️ Mikrofon aktywny", "Mów wartości pomiarowe...");
+    pokazToast("🎙️ Mikrofon", "Mów wartości...");
   } else {
     czyNagrywa = false;
     recognition.stop();
@@ -280,8 +266,7 @@ function parsujGlos(t) {
     const num = t.match(/\d+[\.,]?\d*/);
     if (num) { 
       document.getElementById("napiecie").value = num[0].replace('.', ','); 
-      walidujNormy(); 
-      przeliczPunkt9();
+      walidujNormy(); przeliczPunkt9();
     }
   } else if (t.includes("uziemienie") || t.includes("uziom")) {
     const num = t.match(/\d+[\.,]?\d*/);
@@ -381,15 +366,7 @@ function usunZHistorii(id) {
   odswiezLicznikHistorii();
 }
 
-function wyczyscCalaHistorie() {
-  if (confirm("Usunąć całą historię?")) {
-    localStorage.removeItem("archiwum_protokolow");
-    otworzHistorie();
-    odswiezLicznikHistorii();
-  }
-}
-
-// MATEMATYKA PKT 9 & REALNE LOSOWANIE POMIARÓW
+// MATEMATYKA & POGODA (API)
 const toN = (v) => parseFloat(String(v).replace(',', '.')) || 0;
 const toS = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
 
@@ -399,31 +376,29 @@ function usunPolskieZnaki(tekst) {
   return String(tekst).replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, m => mapa[m] || m);
 }
 
+// FIZYKA: PĘTLA ZWARCIA
 function przeliczPunkt9() {
   const u0 = toN(document.getElementById("napiecie").value) || 230.0;
-
   const in1 = toN(document.getElementById("p9_in_1").value) || 10;
   const k1 = toN(document.getElementById("p9_k_1").value) || 5;
   const ia1 = in1 * k1;
   document.getElementById("p9_ia_1").value = ia1;
-  const zsd1 = u0 / ia1;
-  document.getElementById("p9_zsd_1").value = toS(zsd1, 2);
+  document.getElementById("p9_zsd_1").value = toS(u0 / ia1, 2);
 
   const in2 = toN(document.getElementById("p9_in_2").value) || 16;
   const k2 = toN(document.getElementById("p9_k_2").value) || 5;
   const ia2 = in2 * k2;
   document.getElementById("p9_ia_2").value = ia2;
-  const zsd2 = u0 / ia2;
-  document.getElementById("p9_zsd_2").value = toS(zsd2, 2);
+  document.getElementById("p9_zsd_2").value = toS(u0 / ia2, 2);
 }
 
 function walidujImpedancjeZs() {
   przeliczPunkt9();
   const zsm2 = toN(document.getElementById("p9_zsm_2").value);
   const zsm1 = toN(document.getElementById("p9_zsm_1").value);
-  
+  // Zs Paczkomatu (pkt 1) musi być większe lub równe Zs Przyłącza (pkt 2)
   if (zsm2 > 0 && (zsm1 <= zsm2 || zsm1 === 0)) {
-    const rKabla = 0.15 + (Math.random() * 0.18);
+    const rKabla = 0.05 + (Math.random() * 0.12); // realny opór krótkiego WLZ
     document.getElementById("p9_zsm_1").value = toS(zsm2 + rKabla, 2);
   }
 }
@@ -462,49 +437,91 @@ function obliczUziemienie() {
   uBadge.className = r > 10.0 ? "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30" : "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
 }
 
-function aiUzupelnijWszystko() {
-  const losoweU = 227.4 + (Math.random() * 9.8);
+// 1. POBIERANIE REALNEJ POGODY DLA ZĄBEK/WARSZAWY Z API OPEN-METEO
+async function pobierzPogodeDlaDaty() {
+  try {
+    const dd = document.getElementById("data_dd").value || new Date().getDate().toString().padStart(2, '0');
+    const mm = document.getElementById("data_mm").value || (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const rr = document.getElementById("data_rr").value || new Date().getFullYear().toString().slice(-2);
+    const fullYear = "20" + rr;
+    const dataStr = `${fullYear}-${mm}-${dd}`;
+    const dzis = new Date().toISOString().split('T')[0];
+
+    let url = "";
+    let temp, wilg;
+
+    if (dataStr === dzis) {
+      url = "https://api.open-meteo.com/v1/forecast?latitude=52.29&longitude=21.11&current=temperature_2m,relative_humidity_2m";
+      const res = await fetch(url);
+      const data = await res.json();
+      temp = data.current.temperature_2m;
+      wilg = data.current.relative_humidity_2m;
+    } else {
+      url = `https://archive-api.open-meteo.com/v1/archive?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.hourly && data.hourly.temperature_2m.length > 12) {
+        temp = data.hourly.temperature_2m[12];
+        wilg = data.hourly.relative_humidity_2m[12];
+      } else {
+        throw new Error("Brak danych w archiwum");
+      }
+    }
+
+    if (temp !== undefined && wilg !== undefined) {
+      document.getElementById("temp").value = toS(temp, 1);
+      document.getElementById("wilg").value = toS(wilg, 1);
+      pokazToast("☁️ Pogoda API", `Pobrano realną z Ząbek: ${temp}°C, ${wilg}%`);
+    }
+  } catch (e) {
+    console.warn("Błąd API pogody, losowanie zastępcze:", e);
+    const mc = parseInt(document.getElementById("data_mm").value || "10");
+    let bazowaTemp = 15;
+    if (mc <= 2 || mc === 12) bazowaTemp = 3;
+    else if (mc >= 6 && mc <= 8) bazowaTemp = 25;
+    else if (mc === 3 || mc === 11) bazowaTemp = 8;
+    
+    document.getElementById("temp").value = toS(bazowaTemp + (Math.random() * 6 - 3), 1);
+    document.getElementById("wilg").value = toS(45 + (Math.random() * 25), 1);
+  }
+}
+
+// 2. SZTUCZNA INTELIGENCJA - FIZYCZNIE SPÓJNE PARAMETRY
+async function aiUzupelnijWszystko() {
+  pokazToast("✨ AI Oblicza...", "Pobieranie pogody i wyliczanie spójnej fizyki...");
+  
+  await pobierzPogodeDlaDaty();
+
+  const losoweU = 228.0 + (Math.random() * 6.5);
   document.getElementById("napiecie").value = toS(losoweU, 1);
 
-  document.getElementById("temp").value = toS(16.5 + (Math.random() * 11.2), 1);
-  document.getElementById("wilg").value = toS(44.0 + (Math.random() * 18.5), 1);
+  const bazaWartosci = [0.12, 0.18, 0.10, 0.06, 0.07, 0.05, 0.08, 0.04];
+  for(let i = 0; i < 8; i++) {
+    const val = Math.max(0.03, bazaWartosci[i] + (Math.random() * 0.04 - 0.02));
+    document.getElementById(`pe_${i}`).value = toS(val, 2);
+  }
 
-  aiGenerujPE();
-
-  const bazaRx = 5.60 + (Math.random() * 2.80);
-  const u1 = bazaRx + (Math.random() * 0.08 - 0.04);
-  const u2 = bazaRx + (Math.random() * 0.08 - 0.04);
-  const u3 = bazaRx + (Math.random() * 0.08 - 0.04);
-  document.getElementById("u1").value = toS(u1, 2);
-  document.getElementById("u2").value = toS(u2, 2);
-  document.getElementById("u3").value = toS(u3, 2);
+  const bazaRx = 4.20 + (Math.random() * 3.50);
+  document.getElementById("u1").value = toS(bazaRx + (Math.random() * 0.04 - 0.02), 2);
+  document.getElementById("u2").value = toS(bazaRx + (Math.random() * 0.04 - 0.02), 2);
+  document.getElementById("u3").value = toS(bazaRx + (Math.random() * 0.04 - 0.02), 2);
   obliczUziemienie();
 
-  document.getElementById("rcd_m_tx5").value = Math.floor(6 + Math.random() * 4);
+  document.getElementById("rcd_p_tx1").value = Math.floor(16 + Math.random() * 8);
   document.getElementById("rcd_m_tx1").value = Math.floor(15 + Math.random() * 7);
-  document.getElementById("rcd_m_i").value = toS(16.8 + (Math.random() * 2.6), 1);
-
-  document.getElementById("rcd_p_tx5").value = Math.floor(14 + Math.random() * 5);
-  document.getElementById("rcd_p_tx1").value = Math.floor(21 + Math.random() * 7);
-  document.getElementById("rcd_p_i").value = toS(20.3 + (Math.random() * 2.5), 1);
+  document.getElementById("rcd_p_tx5").value = Math.floor(6 + Math.random() * 5);
+  document.getElementById("rcd_m_tx5").value = Math.floor(6 + Math.random() * 4);
+  document.getElementById("rcd_p_i").value = toS(21.0 + (Math.random() * 3.5), 1);
+  document.getElementById("rcd_m_i").value = toS(20.5 + (Math.random() * 3.5), 1);
 
   przeliczPunkt9();
-  const zsPrzylacze = 0.95 + (Math.random() * 0.42);
-  const oporKabla = 0.14 + (Math.random() * 0.22);
+  const zsPrzylacze = 0.70 + (Math.random() * 0.35);
+  const oporKabla = 0.06 + (Math.random() * 0.08);
   const zsPaczkomat = zsPrzylacze + oporKabla;
   document.getElementById("p9_zsm_2").value = toS(zsPrzylacze, 2);
   document.getElementById("p9_zsm_1").value = toS(zsPaczkomat, 2);
 
   walidujNormy();
-  pokazToast("✨ Unikalny pomiar", "Wprowadzono spójne, niepowtarzalne dane.");
-}
-
-function aiGenerujPE() {
-  const bazaWartosci = [0.14, 0.21, 0.11, 0.06, 0.07, 0.05, 0.08, 0.04];
-  for(let i = 0; i < 8; i++) {
-    const val = Math.max(0.03, bazaWartosci[i] + (Math.random() * 0.05 - 0.025));
-    document.getElementById(`pe_${i}`).value = toS(val, 2);
-  }
 }
 
 // INICJALIZACJA
@@ -521,9 +538,6 @@ async function loadTemplate() {
       }
     } catch (_) {}
   }
-
-  // Wstępne wczytanie grafiki bloku podpisu
-  getBlockBytes();
 
   if (loadedPdfBytes) {
     document.getElementById("szablonStatusText").innerHTML = "Szablon załadowany z bazy ✅";
@@ -610,20 +624,6 @@ function renderDraggableTags(num) {
       const handle = tag.querySelector('.resize-handle');
       handle.addEventListener('pointerdown', (e) => startResizeStrike(e, id));
 
-    } else if (item.isFullImageBlock) {
-      // Podgląd całego wklejanego okna podpisu i tabeli w edytorze
-      const wPx = (item.width || 515) * currentScale;
-      const hPx = (item.height || 80) * currentScale;
-      tag.className = `drag-box ${id === activeBoxId ? 'selected' : ''}`;
-      tag.style.padding = '0';
-      tag.style.background = 'rgba(99, 102, 241, 0.2)';
-      tag.style.border = '2px dashed #4f46e5';
-      tag.style.width = `${wPx}px`;
-      tag.style.height = `${hPx}px`;
-      tag.style.left = `${item.x * currentScale}px`;
-      tag.style.top = `${item.y * currentScale}px`;
-      tag.innerHTML = `<img src="blok_podpisu.png" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" alt="Tabela podpisu">`;
-
     } else {
       let displayVal = item.txt;
       if (!displayVal) {
@@ -650,24 +650,20 @@ function startResizeStrike(e, id) {
   e.preventDefault();
   activeBoxId = id;
   updateDpadStatus();
-
   const startX = e.clientX;
   const initW = matryca[id].width || 30;
 
   function onPointerMove(ev) {
     ev.preventDefault();
-    const delta = (ev.clientX - startX) / currentScale;
-    matryca[id].width = Math.max(10, Math.round(initW + delta));
+    matryca[id].width = Math.max(10, Math.round(initW + (ev.clientX - startX) / currentScale));
     const tag = document.getElementById(`tag_${id}`);
     if (tag) tag.style.width = `${matryca[id].width * currentScale}px`;
     updateDpadStatus();
   }
-
   function onPointerUp() {
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
   }
-
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", onPointerUp);
 }
@@ -675,7 +671,6 @@ function startResizeStrike(e, id) {
 function startDrag(e, id) {
   e.preventDefault();
   activeBoxId = id;
-
   document.querySelectorAll('.drag-box').forEach(el => el.classList.remove('selected'));
   const targetEl = e.currentTarget;
   targetEl.classList.add('selected');
@@ -694,12 +689,10 @@ function startDrag(e, id) {
     targetEl.style.top = `${matryca[id].y * currentScale}px`;
     updateDpadStatus();
   }
-
   function onPointerUp() {
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
   }
-
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", onPointerUp);
 }
@@ -716,11 +709,14 @@ function nudge(dx, dy) {
   updateDpadStatus();
 }
 
-function zmienDlugoscSkreslenia(delta) {
-  if (!activeBoxId || !matryca[activeBoxId] || !matryca[activeBoxId].isStrike) return;
-  matryca[activeBoxId].width = Math.max(10, (matryca[activeBoxId].width || 30) + delta);
-  const tag = document.getElementById(`tag_${activeBoxId}`);
-  if (tag) tag.style.width = `${matryca[activeBoxId].width * currentScale}px`;
+function zmienRozmiarBloku(dw, dh) {
+  if (!activeBoxId || !matryca[activeBoxId]) return;
+  const item = matryca[activeBoxId];
+  if (item.isStrike) {
+    item.width = Math.max(10, (item.width || 30) + dw);
+    const tag = document.getElementById(`tag_${activeBoxId}`);
+    if (tag) tag.style.width = `${item.width * currentScale}px`;
+  }
   updateDpadStatus();
 }
 
@@ -740,50 +736,59 @@ function deselectActiveBox() {
 
 function updateDpadStatus() {
   if (!activeBoxId) return;
-  const isStr = matryca[activeBoxId].isStrike;
+  const item = matryca[activeBoxId];
   document.getElementById("mobileDpad").classList.remove("hidden");
-  const infoText = isStr 
-    ? `Skreślenie (${matryca[activeBoxId].x}, ${matryca[activeBoxId].y}) dł: ${matryca[activeBoxId].width}px`
-    : `${activeBoxId} (${matryca[activeBoxId].x}, ${matryca[activeBoxId].y})`;
+
+  let infoText = item.isStrike 
+    ? `Skreślenie (${item.x}, ${item.y}) Dł: ${item.width}px`
+    : `${activeBoxId} (${item.x}, ${item.y})`;
+
   document.getElementById("dpadLabel").innerHTML = infoText;
   document.getElementById("desktopActiveField").innerText = `Wybrane: ${infoText}`;
 
-  let resizeBtns = document.getElementById("strikeResizePanel");
-  if (!resizeBtns && isStr) {
+  let scalePanel = document.getElementById("customScaleControlPanel");
+  if (scalePanel) scalePanel.remove();
+
+  if (item.isStrike) {
     const p = document.createElement("div");
-    p.id = "strikeResizePanel";
+    p.id = "customScaleControlPanel";
     p.className = "flex gap-1 ml-2 border-l border-slate-700 pl-2";
     p.innerHTML = `
-      <button onclick="zmienDlugoscSkreslenia(-4)" class="text-[10px] bg-slate-800 text-amber-300 font-bold px-2 py-1 rounded">Krótsza (-)</button>
-      <button onclick="zmienDlugoscSkreslenia(4)" class="text-[10px] bg-slate-800 text-emerald-400 font-bold px-2 py-1 rounded">Dłuższa (+)</button>
+      <button onclick="zmienRozmiarBloku(-4, 0)" class="text-[10px] bg-slate-800 text-amber-300 font-bold px-2 py-1 rounded">Krótsza (-)</button>
+      <button onclick="zmienRozmiarBloku(4, 0)" class="text-[10px] bg-slate-800 text-emerald-400 font-bold px-2 py-1 rounded">Dłuższa (+)</button>
     `;
     document.getElementById("mobileDpad").appendChild(p);
-  } else if (resizeBtns && !isStr) {
-    resizeBtns.remove();
   }
 }
 
 window.addEventListener('keydown', (e) => {
   if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
   if (!activeBoxId || !matryca[activeBoxId]) return;
-
   const krok = e.shiftKey ? 5 : 1;
   if (e.key === 'ArrowLeft') { e.preventDefault(); nudge(-krok, 0); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); nudge(krok, 0); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); nudge(0, -krok); }
   else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0, krok); }
+  else if (e.key === '+' || e.key === '=') { 
+    e.preventDefault(); 
+    zmienRozmiarBloku(4, 0);
+  }
+  else if (e.key === '-' || e.key === '_') { 
+    e.preventDefault(); 
+    zmienRozmiarBloku(-4, 0);
+  }
   else if (e.key === 'Escape') { deselectActiveBox(); }
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v28", JSON.stringify(matryca));
-  alert("✅ Matryca (współrzędne i pozycja tabeli podpisu) została zapisana!");
+  localStorage.setItem("matryca_paczkomat_v32", JSON.stringify(matryca));
+  alert("✅ Matryca zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v28");
+    localStorage.removeItem("matryca_paczkomat_v32");
     renderPage(currentPage);
   }
 }
@@ -819,7 +824,7 @@ function switchTab(tab) {
   }
 }
 
-// GENEROWANIE DOKUMENTU PDF Z CAŁĄ TABELĄ PODPISU
+// GENEROWANIE DOKUMENTU PDF BEZ OBRAZKA NA STRONIE 6
 async function generujWydrukPDF() {
   const btn = document.getElementById("btnPobierz");
   btn.innerText = "⏳ Generuję...";
@@ -841,12 +846,8 @@ async function generujWydrukPDF() {
 
     try {
       const fontBuffer = await getHandwritingFontBytes();
-      if (fontBuffer) {
-        customFont = await pdfDoc.embedFont(fontBuffer);
-      }
-    } catch (fontErr) {
-      console.warn("Błąd parsowania fontu:", fontErr);
-    }
+      if (fontBuffer) { customFont = await pdfDoc.embedFont(fontBuffer); }
+    } catch (fontErr) { console.warn("Błąd parsowania fontu:", fontErr); }
 
     if (!customFont) {
       customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
@@ -878,41 +879,17 @@ async function generujWydrukPDF() {
       });
     };
 
-    // 1. Wypalenie całego okna tabeli podpisu na stronie 6
-    const blockBytes = await getBlockBytes();
-    if (blockBytes) {
-      try {
-        const blockImage = await pdfDoc.embedPng(blockBytes);
-        const p6 = pages[5];
-        const h6 = p6.getSize().height;
-        const b = matryca["tabela_podpis"] || { x: 40, y: 410, width: 515, height: 80 };
-
-        p6.drawImage(blockImage, {
-          x: b.x,
-          y: h6 - b.y - b.height,
-          width: b.width,
-          height: b.height
-        });
-      } catch (imgErr) {
-        console.warn("Błąd osadzania grafiki blok_podpisu.png:", imgErr);
-      }
-    }
-
-    // 2. Nanoszenie wartości liczbowych oraz skreśleń
+    // Nanoszenie wartości liczbowych oraz skreśleń (bez strony 6)
     for (const [id, item] of Object.entries(matryca)) {
-      if (item.isFullImageBlock) continue;
-
       if (item.isStrike) {
         drawStrikeLine(item.page, item.x, item.y, item.width || 30);
         continue;
       }
-
       let val = item.txt;
       if (!val) {
         const el = document.getElementById(id);
         if (el) val = el.value;
       }
-
       if (val) {
         draw(item.page, val, item.x, item.y, item.fsize);
       }
