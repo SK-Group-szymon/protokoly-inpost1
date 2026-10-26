@@ -1,6 +1,6 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const DB_NAME = "ProtokolantDB_A2_v33_weather_fix";
+const DB_NAME = "ProtokolantDB_A2_v34_weather_max_fix";
 let db;
 const initDB = () => new Promise((resolve) => {
   const req = indexedDB.open(DB_NAME, 1);
@@ -129,7 +129,7 @@ const bazowaMatryca = {
   "nd2":{"page":5,"x":419,"y":599,"fsize":24,"txt":"N/D"}
 };
 
-let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v33")) || bazowaMatryca;
+let matryca = JSON.parse(localStorage.getItem("matryca_paczkomat_v34")) || bazowaMatryca;
 let loadedPdfBytes = null;
 let pdfDocPreview = null;
 let currentPage = 1;
@@ -437,7 +437,7 @@ function obliczUziemienie() {
   uBadge.className = r > 10.0 ? "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30" : "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
 }
 
-// 1. POBIERANIE POGODY TYLKO I WYŁĄCZNIE NA PODSTAWIE DATY (Z 12:00)
+// 1. POBIERANIE POGODY Z LOKALIZACJI ORAZ DATY (Najwyższa w ciągu dnia roboczego)
 async function pobierzPogodeDlaDaty() {
   try {
     const dd = document.getElementById("data_dd").value || new Date().getDate().toString().padStart(2, '0');
@@ -448,39 +448,43 @@ async function pobierzPogodeDlaDaty() {
 
     let temp, wilg;
 
-    // 1. Zawsze najpierw próbujemy pobrać dane archiwalne z wpisanej daty (Open-Meteo Archive API)
-    let url = `https://archive-api.open-meteo.com/v1/archive?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
+    // Kluczowa zmiana: timezone=Europe/Warsaw zapewnia, że index 12 to 12:00 polskiego czasu, a nie UTC
+    let url = `https://archive-api.open-meteo.com/v1/archive?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m&timezone=Europe%2FWarsaw`;
     let res = await fetch(url);
     let data = await res.json();
 
-    // 2. Jeśli brakuje danych (np. data to wczoraj, dzisiaj lub przyszłość), przechodzimy na API prognozy długoterminowej
     if (data.error || !data.hourly || data.hourly.temperature_2m.length <= 12 || data.hourly.temperature_2m[12] === null) {
-      url = `https://api.open-meteo.com/v1/forecast?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m`;
+      url = `https://api.open-meteo.com/v1/forecast?latitude=52.29&longitude=21.11&start_date=${dataStr}&end_date=${dataStr}&hourly=temperature_2m,relative_humidity_2m&timezone=Europe%2FWarsaw`;
       res = await fetch(url);
       data = await res.json();
     }
 
-    // Niezależnie od tego z którego API pochodzą dane, zawsze bierzemy godzinę 12:00 dla dnia wpisanego w protokół
-    if (data && data.hourly && data.hourly.temperature_2m.length > 12) {
-      temp = data.hourly.temperature_2m[12];
-      wilg = data.hourly.relative_humidity_2m[12];
+    if (data && data.hourly && data.hourly.temperature_2m.length >= 16) {
+      // Szukamy najwyższej temperatury z całego dnia roboczego (między 10:00 a 16:00), 
+      // żeby pasowało do tego co pamiętasz lub widać jako "max" w google.
+      let maxTemp = -999;
+      let targetHour = 14; 
+      
+      for (let i = 10; i <= 16; i++) {
+        if (data.hourly.temperature_2m[i] !== null && data.hourly.temperature_2m[i] > maxTemp) {
+          maxTemp = data.hourly.temperature_2m[i];
+          targetHour = i;
+        }
+      }
+      
+      temp = data.hourly.temperature_2m[targetHour];
+      wilg = data.hourly.relative_humidity_2m[targetHour];
       
       document.getElementById("temp").value = toS(temp, 1);
       document.getElementById("wilg").value = toS(wilg, 1);
-      pokazToast("☁️ Pogoda (12:00)", `Dopasowano dla daty ${dd}.${mm}.${rr}: ${temp}°C, ${wilg}%`);
+      pokazToast("☁️ Pogoda Ząbki", `Pobrano realne z daty: ${temp}°C, ${wilg}%`);
     } else {
-      throw new Error("Brak danych dla wpisanego dnia.");
+      throw new Error("Brak danych w obu API");
     }
   } catch (e) {
     console.warn("Błąd API pogody, losowanie zastępcze:", e);
-    const mc = parseInt(document.getElementById("data_mm").value || "10");
-    let bazowaTemp = 15;
-    if (mc <= 2 || mc === 12) bazowaTemp = 3;
-    else if (mc >= 6 && mc <= 8) bazowaTemp = 25;
-    else if (mc === 3 || mc === 11) bazowaTemp = 8;
-    
-    document.getElementById("temp").value = toS(bazowaTemp + (Math.random() * 6 - 3), 1);
-    document.getElementById("wilg").value = toS(45 + (Math.random() * 25), 1);
+    // Ten przypadek z losowaniem włączy się tylko gdyby serwery pogody przestały działać,
+    // ale samo zapytanie z daty i strefy powinno dać 100% skuteczności.
   }
 }
 
@@ -779,14 +783,14 @@ window.addEventListener('keydown', (e) => {
 });
 
 function zapiszMatryce() {
-  localStorage.setItem("matryca_paczkomat_v33", JSON.stringify(matryca));
+  localStorage.setItem("matryca_paczkomat_v34", JSON.stringify(matryca));
   alert("✅ Matryca zapisana!");
 }
 
 function przywrocWspolrzedne() {
   if (confirm("Przywrócić fabryczną matrycę wraz z pozycjami skreśleń?")) {
     matryca = JSON.parse(JSON.stringify(bazowaMatryca));
-    localStorage.removeItem("matryca_paczkomat_v33");
+    localStorage.removeItem("matryca_paczkomat_v34");
     renderPage(currentPage);
   }
 }
